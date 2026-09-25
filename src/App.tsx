@@ -4,6 +4,7 @@ import { AppShell } from '@/components/AppShell'
 import { HistoryScreen } from '@/screens/HistoryScreen'
 import { LogScreen } from '@/screens/LogScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
+import { StylePreviewScreen } from '@/screens/StylePreviewScreen'
 import { TodayScreen } from '@/screens/TodayScreen'
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="history" element={<HistoryScreen />} />
         <Route path="log" element={<LogScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
+        <Route path="settings/style" element={<StylePreviewScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

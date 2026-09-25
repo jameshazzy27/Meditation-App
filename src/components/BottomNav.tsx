@@ -21,14 +21,21 @@ export function BottomNav() {
               end={to === '/'}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors',
-                  isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  'flex flex-col items-center gap-1 pt-2.5 pb-3 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className="size-6" strokeWidth={isActive ? 2.25 : 1.75} />
+                  <span
+                    className={cn(
+                      'grid h-8 w-14 place-items-center rounded-full transition-colors',
+                      isActive && 'bg-primary/12',
+                    )}
+                  >
+                    <Icon className="size-5.5" strokeWidth={isActive ? 2.25 : 1.75} />
+                  </span>
                   {label}
                 </>
               )}

@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Aura</title>
     <script>
-      // Follow the device's light/dark setting until Aura has its own theme toggle (Step 0.2).
-      const dark = window.matchMedia('(prefers-color-scheme: dark)')
-      const apply = () => document.documentElement.classList.toggle('dark', dark.matches)
-      apply()
-      dark.addEventListener('change', apply)
+      // Apply the saved light/dark choice before the page draws, so it never flashes.
+      // Kept in sync with src/lib/theme.ts.
+      ;(() => {
+        let saved = null
+        try { saved = localStorage.getItem('aura-theme') } catch {}
+        const dark = saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+      })()
     </script>
   </head>
   <body>

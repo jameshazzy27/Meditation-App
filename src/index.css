@@ -1,58 +1,96 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@fontsource-variable/geist";
+@import "@fontsource-variable/fraunces/soft.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Aura theme — calm and nature-inspired.
+ * Light: misty off-white with a deep teal. Dark: deep blue-green night.
+ * Every colour used in the app is defined here, so the whole look can be
+ * tuned from this one file.
+ */
 :root {
-  --radius: 0.75rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --radius: 1rem;
+
+  --background: oklch(0.982 0.006 95);
+  --foreground: oklch(0.26 0.025 210);
+  --card: oklch(0.997 0.003 95);
+  --card-foreground: oklch(0.26 0.025 210);
+  --popover: oklch(0.997 0.003 95);
+  --popover-foreground: oklch(0.26 0.025 210);
+  --primary: oklch(0.5 0.075 190);
+  --primary-foreground: oklch(0.985 0.01 190);
+  --secondary: oklch(0.945 0.018 175);
+  --secondary-foreground: oklch(0.32 0.04 195);
+  --muted: oklch(0.955 0.008 95);
+  --muted-foreground: oklch(0.5 0.02 210);
+  --accent: oklch(0.94 0.025 185);
+  --accent-foreground: oklch(0.3 0.05 195);
+  --destructive: oklch(0.58 0.19 25);
+  --border: oklch(0.91 0.01 110);
+  --input: oklch(0.9 0.012 110);
+  --ring: oklch(0.62 0.07 190);
+
+  /* One colour per entry type */
+  --mood: oklch(0.58 0.12 295);
+  --run: oklch(0.65 0.14 38);
+  --kettlebell: oklch(0.7 0.13 72);
+  --meditation: oklch(0.58 0.09 225);
+
+  /* Mood scale, 1 (low) → 5 (great) */
+  --mood-1: oklch(0.62 0.13 22);
+  --mood-2: oklch(0.7 0.12 55);
+  --mood-3: oklch(0.78 0.11 92);
+  --mood-4: oklch(0.7 0.11 150);
+  --mood-5: oklch(0.6 0.1 180);
+
+  --glow: oklch(0.85 0.06 185 / 0.55);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: oklch(0.175 0.018 220);
+  --foreground: oklch(0.95 0.008 95);
+  --card: oklch(0.215 0.02 220);
+  --card-foreground: oklch(0.95 0.008 95);
+  --popover: oklch(0.23 0.02 220);
+  --popover-foreground: oklch(0.95 0.008 95);
+  --primary: oklch(0.76 0.09 180);
+  --primary-foreground: oklch(0.2 0.03 200);
+  --secondary: oklch(0.27 0.025 210);
+  --secondary-foreground: oklch(0.92 0.02 180);
+  --muted: oklch(0.255 0.018 220);
+  --muted-foreground: oklch(0.7 0.02 210);
+  --accent: oklch(0.29 0.035 200);
+  --accent-foreground: oklch(0.94 0.02 180);
+  --destructive: oklch(0.68 0.17 22);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.6 0.08 185);
+
+  --mood: oklch(0.74 0.11 295);
+  --run: oklch(0.74 0.13 40);
+  --kettlebell: oklch(0.8 0.12 78);
+  --meditation: oklch(0.74 0.09 225);
+
+  --mood-1: oklch(0.7 0.13 22);
+  --mood-2: oklch(0.76 0.12 55);
+  --mood-3: oklch(0.83 0.1 92);
+  --mood-4: oklch(0.77 0.11 150);
+  --mood-5: oklch(0.72 0.1 180);
+
+  --glow: oklch(0.45 0.07 195 / 0.45);
 }
 
 @theme inline {
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --shadow-soft: 0 1px 2px oklch(0.3 0.03 210 / 0.05), 0 10px 30px -14px oklch(0.3 0.04 200 / 0.18);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -71,13 +109,35 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-mood: var(--mood);
+  --color-run: var(--run);
+  --color-kettlebell: var(--kettlebell);
+  --color-meditation: var(--meditation);
+  --color-mood-1: var(--mood-1);
+  --color-mood-2: var(--mood-2);
+  --color-mood-3: var(--mood-3);
+  --color-mood-4: var(--mood-4);
+  --color-mood-5: var(--mood-5);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    font-optical-sizing: auto;
   }
 }
