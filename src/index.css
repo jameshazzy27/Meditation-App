@@ -47,6 +47,12 @@
   --mood-5: oklch(0.6 0.1 180);
 
   --glow: oklch(0.85 0.06 185 / 0.55);
+
+  /* Chart series for comparing categories (e.g. run types). Validated for
+     colour-blind separation on the card surface — keep this order. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
 }
 
 .dark {
@@ -81,6 +87,10 @@
   --mood-5: oklch(0.72 0.1 180);
 
   --glow: oklch(0.45 0.07 195 / 0.45);
+
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
 }
 
 @theme inline {
@@ -118,6 +128,9 @@
   --color-mood-3: var(--mood-3);
   --color-mood-4: var(--mood-4);
   --color-mood-5: var(--mood-5);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
 }
 
 @layer base {

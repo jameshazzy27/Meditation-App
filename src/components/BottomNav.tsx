@@ -1,4 +1,4 @@
-import { CalendarDays, History, PlusCircle, Settings, type LucideIcon } from 'lucide-react'
+import { CalendarDays, ChartLine, History, PlusCircle, Settings, type LucideIcon } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 
 import { cn } from '@/lib/utils'
@@ -7,6 +7,7 @@ const tabs: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/', label: 'Today', icon: CalendarDays },
   { to: '/history', label: 'History', icon: History },
   { to: '/log', label: 'Log', icon: PlusCircle },
+  { to: '/trends', label: 'Trends', icon: ChartLine },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -21,7 +22,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/85 backdrop-blur-md">
-      <ul className="mx-auto grid max-w-md grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+      <ul className="mx-auto grid max-w-md grid-cols-5 pb-[env(safe-area-inset-bottom)]">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = isTabActive(to, pathname)
           return (
@@ -36,7 +37,7 @@ export function BottomNav() {
               >
                 <span
                   className={cn(
-                    'grid h-8 w-14 place-items-center rounded-full transition-colors',
+                    'grid h-8 w-12 place-items-center rounded-full transition-colors',
                     active && 'bg-primary/12',
                   )}
                 >

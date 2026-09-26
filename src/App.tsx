@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 
 import { AppShell } from '@/components/AppShell'
@@ -14,6 +15,10 @@ import { RunLogScreen } from '@/screens/RunLogScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { StylePreviewScreen } from '@/screens/StylePreviewScreen'
 
+// Charts are only loaded when Trends is opened, so the rest of the app starts faster.
+// (They're still saved for offline use.)
+const TrendsScreen = lazy(() => import('@/screens/trends/TrendsScreen').then((m) => ({ default: m.TrendsScreen })))
+
 export default function App() {
   return (
     <Routes>
@@ -29,6 +34,14 @@ export default function App() {
         <Route path="log/run/:id" element={<RunLogScreen />} />
         <Route path="log/kettlebell/:id" element={<KettlebellLogScreen />} />
         <Route path="meditation/:id" element={<MeditationEditScreen />} />
+        <Route
+          path="trends"
+          element={
+            <Suspense fallback={null}>
+              <TrendsScreen />
+            </Suspense>
+          }
+        />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="settings/style" element={<StylePreviewScreen />} />
         <Route path="settings/complexes" element={<ComplexesScreen />} />
