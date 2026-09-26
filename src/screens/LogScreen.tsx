@@ -8,7 +8,7 @@ import type { EntryKind } from '@/lib/entryTypes'
 
 const options: { kind: EntryKind; title: string; description: string; to?: string }[] = [
   { kind: 'kettlebell', title: 'Kettlebell session', description: 'Complex, weight and rounds', to: '/log/kettlebell' },
-  { kind: 'run', title: 'Run', description: 'Coming in Step 1.3' },
+  { kind: 'run', title: 'Run', description: 'Distance, time and pace', to: '/log/run' },
   { kind: 'mood', title: 'Mood', description: 'Coming in Step 1.4' },
 ]
 

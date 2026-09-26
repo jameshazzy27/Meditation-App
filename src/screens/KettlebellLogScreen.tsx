@@ -21,6 +21,7 @@ import {
   type KettlebellFormValues,
 } from '@/lib/kettlebellForm'
 import { parseWholeNumber } from '@/lib/numbers'
+import { dayPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
 /** Log a kettlebell session (/log/kettlebell, optionally ?date=YYYY-MM-DD). */
@@ -92,7 +93,7 @@ function KettlebellForm({ active, initial }: { active: Complex[]; initial: Kettl
     if (!result.session) return
     setSaving(true)
     await kettlebellSessions.create(result.session)
-    navigate('/')
+    navigate(dayPath(result.session.date))
   }
 
   const rounds = parseWholeNumber(values.rounds)

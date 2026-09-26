@@ -6,6 +6,7 @@ import { ComplexFormScreen } from '@/screens/ComplexFormScreen'
 import { HistoryScreen } from '@/screens/HistoryScreen'
 import { KettlebellLogScreen } from '@/screens/KettlebellLogScreen'
 import { LogScreen } from '@/screens/LogScreen'
+import { RunLogScreen } from '@/screens/RunLogScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { StylePreviewScreen } from '@/screens/StylePreviewScreen'
 import { TodayScreen } from '@/screens/TodayScreen'
@@ -18,6 +19,8 @@ export default function App() {
         <Route path="history" element={<HistoryScreen />} />
         <Route path="log" element={<LogScreen />} />
         <Route path="log/kettlebell" element={<KettlebellLogScreen />} />
+        <Route path="log/run" element={<RunLogScreen />} />
+        <Route path="log/run/:id" element={<RunLogScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="settings/style" element={<StylePreviewScreen />} />
         <Route path="settings/complexes" element={<ComplexesScreen />} />

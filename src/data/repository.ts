@@ -16,6 +16,8 @@ import type {
 type StoredRecord = { id: string; createdAt: string; updatedAt: string }
 
 const byCreatedAt = (a: StoredRecord, b: StoredRecord) => a.createdAt.localeCompare(b.createdAt)
+const newestFirst = (a: StoredRecord & { date: string }, b: StoredRecord & { date: string }) =>
+  b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
 
 /** Create / read / update / delete for one kind of record. */
 function repository<T extends StoredRecord>(table: Table<T, string>) {
@@ -58,6 +60,11 @@ function dayRepository<T extends StoredRecord & { date: string }>(table: Table<T
     async listForDay(date: string): Promise<T[]> {
       return (await table.where('date').equals(date).toArray()).sort(byCreatedAt)
     },
+
+    /** The most recently dated entry. */
+    async latest(): Promise<T | undefined> {
+      return (await table.toArray()).sort(newestFirst)[0]
+    },
   }
 }
 
@@ -78,7 +85,7 @@ export const kettlebellSessions = {
     const sessions = complexId
       ? await db.kettlebellSessions.where('complexId').equals(complexId).toArray()
       : await db.kettlebellSessions.toArray()
-    return sessions.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))[0]
+    return sessions.sort(newestFirst)[0]
   },
 }
 
