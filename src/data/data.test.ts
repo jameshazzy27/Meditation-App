@@ -158,3 +158,27 @@ describe('kettlebellSessions.latest', () => {
     expect(await kettlebellSessions.latest('zzz')).toBeUndefined()
   })
 })
+
+describe('moods.tagsByUse', () => {
+  beforeEach(async () => {
+    await deleteSampleData()
+    for (const m of await moods.list()) await moods.remove(m.id)
+  })
+
+  it('orders tags by how often they are used', async () => {
+    await moods.create({ date: '2026-09-01', rating: 3, tags: ['work', 'sleep'] })
+    await moods.create({ date: '2026-09-02', rating: 4, tags: ['sleep'] })
+    await moods.create({ date: '2026-09-03', rating: 4, tags: ['coffee', 'sleep', 'work'] })
+    expect(await moods.tagsByUse()).toEqual(['sleep', 'work', 'coffee'])
+  })
+})
+
+describe('replace', () => {
+  it('saves an edit exactly, dropping cleared fields but keeping id and createdAt', async () => {
+    const run = await runs.create({ date: '2026-09-01', runType: 'long', distanceKm: 10, notes: 'windy' })
+    const replaced = await runs.replace(run.id, { date: '2026-09-02', runType: 'short' })
+    expect(replaced).toEqual({ id: run.id, createdAt: run.createdAt, updatedAt: replaced.updatedAt, date: '2026-09-02', runType: 'short' })
+    expect(await runs.get(run.id)).toEqual(replaced)
+    await runs.remove(run.id)
+  })
+})

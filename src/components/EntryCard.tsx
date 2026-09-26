@@ -1,4 +1,6 @@
+import { ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import { EntryIcon } from '@/components/EntryIcon'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,17 +11,23 @@ export function EntryCard({
   kind,
   title,
   meta,
+  to,
+  icon,
   children,
 }: {
   kind: EntryKind
+  /** Replaces the usual icon for this kind, e.g. the mood's own face. */
+  icon?: ReactNode
   title: string
   meta?: string
+  /** Where tapping the card goes (its edit screen). */
+  to?: string
   children?: ReactNode
 }) {
-  return (
-    <Card>
+  const card = (
+    <Card className={cn(to && 'transition-colors hover:bg-accent/40')}>
       <CardContent className="flex gap-4">
-        <EntryIcon kind={kind} />
+        {icon ?? <EntryIcon kind={kind} />}
         <div className="min-w-0 flex-1 space-y-2">
           <div>
             <p className={cn('text-xs font-medium tracking-wider uppercase', entryKinds[kind].text)}>
@@ -30,8 +38,16 @@ export function EntryCard({
           </div>
           {children}
         </div>
+        {to && <ChevronRight className="size-5 shrink-0 self-center text-muted-foreground/60" />}
       </CardContent>
     </Card>
+  )
+  return to ? (
+    <Link to={to} className="block">
+      {card}
+    </Link>
+  ) : (
+    card
   )
 }
 

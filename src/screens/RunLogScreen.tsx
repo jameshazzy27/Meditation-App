@@ -71,7 +71,7 @@ function RunForm({ existing, initial }: { existing?: Run; initial: RunFormValues
     setErrors(result.errors)
     if (!result.run) return
     setSaving(true)
-    if (existing) await runs.update(existing.id, result.run)
+    if (existing) await runs.replace(existing.id, result.run)
     else await runs.create(result.run)
     navigate(dayPath(result.run.date))
   }

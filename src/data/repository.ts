@@ -47,6 +47,18 @@ function repository<T extends StoredRecord>(table: Table<T, string>) {
       return updated
     },
 
+    /**
+     * Saves an edited record exactly as given — fields you've cleared are
+     * removed — keeping its id and creation time.
+     */
+    async replace(id: string, input: NewRecord<T>): Promise<T> {
+      const existing = await table.get(id)
+      if (!existing) throw new Error(`No record with id ${id}`)
+      const record = { ...input, id, createdAt: existing.createdAt, updatedAt: new Date().toISOString() } as T
+      await table.put(record)
+      return record
+    },
+
     remove(id: string): Promise<void> {
       return table.delete(id)
     },
@@ -122,8 +134,23 @@ export const complexes = {
   },
 }
 
-export const moods = dayRepository<MoodEntry>(db.moods)
+export const moods = {
+  ...dayRepository<MoodEntry>(db.moods),
+
+  /** Every tag you've used, most used first (ties alphabetical). */
+  async tagsByUse(): Promise<string[]> {
+    const counts = new Map<string, number>()
+    for (const mood of await db.moods.toArray())
+      for (const tag of mood.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1)
+    return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tag]) => tag)
+  },
+}
 export const meditations = dayRepository<MeditationSession>(db.meditations)
+
+// Mood tags are stored lower-case and trimmed, so "Sleep" and "sleep " are the same tag.
+export function normaliseTag(tag: string): string {
+  return tag.trim().replace(/\s+/g, ' ').toLowerCase()
+}
 
 /** Everything logged on one day ('YYYY-MM-DD'). */
 export async function getEntriesForDay(date: string): Promise<DayEntries> {

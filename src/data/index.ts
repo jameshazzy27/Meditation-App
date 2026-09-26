@@ -13,6 +13,7 @@ export {
   kettlebellSessions,
   meditations,
   moods,
+  normaliseTag,
   runs,
 } from './repository'
 export { deleteSampleData, hasSampleData } from './sampleData'

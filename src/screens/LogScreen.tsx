@@ -1,21 +1,35 @@
 import { ChevronRight } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { EntryIcon } from '@/components/EntryIcon'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { Card, CardContent } from '@/components/ui/card'
+import { fromDateKey, isDateKey, todayKey } from '@/data'
 import type { EntryKind } from '@/lib/entryTypes'
 
 const options: { kind: EntryKind; title: string; description: string; to?: string }[] = [
+  { kind: 'mood', title: 'Mood', description: 'A quick check-in', to: '/log/mood' },
   { kind: 'kettlebell', title: 'Kettlebell session', description: 'Complex, weight and rounds', to: '/log/kettlebell' },
   { kind: 'run', title: 'Run', description: 'Distance, time and pace', to: '/log/run' },
-  { kind: 'mood', title: 'Mood', description: 'Coming in Step 1.4' },
 ]
 
 export function LogScreen() {
+  // Coming from a day's "Add" button: carry that day through to the form.
+  const [params] = useSearchParams()
+  const dateParam = params.get('date') ?? ''
+  const date = isDateKey(dateParam) && dateParam !== todayKey() ? dateParam : undefined
+  const withDate = (to: string) => (date ? `${to}?date=${date}` : to)
+
   return (
     <>
-      <ScreenHeader title="Log" subtitle="What would you like to add?" />
+      <ScreenHeader
+        title="Log"
+        subtitle={
+          date
+            ? `Adding to ${fromDateKey(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}`
+            : 'What would you like to add?'
+        }
+      />
       <div className="space-y-3">
         {options.map(({ kind, title, description, to }) => {
           const content = (
@@ -31,7 +45,7 @@ export function LogScreen() {
             </Card>
           )
           return to ? (
-            <Link key={kind} to={to} className="block">
+            <Link key={kind} to={withDate(to)} className="block">
               {content}
             </Link>
           ) : (

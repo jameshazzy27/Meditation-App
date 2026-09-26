@@ -1,10 +1,11 @@
 import { Target, Trophy } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import { BackLink } from '@/components/BackLink'
 import { ComplexBadge } from '@/components/ComplexBadge'
 import { DateField } from '@/components/DateField'
+import { DeleteEntryButton } from '@/components/DeleteEntryButton'
 import { Field } from '@/components/Field'
 import { NumberStepper } from '@/components/NumberStepper'
 import { ScreenHeader } from '@/components/ScreenHeader'
@@ -12,7 +13,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { complexes, fromDateKey, isDateKey, kettlebellSessions, todayKey, useLiveData, type Complex } from '@/data'
+import {
+  complexes,
+  fromDateKey,
+  isDateKey,
+  kettlebellSessions,
+  todayKey,
+  useLiveData,
+  type Complex,
+  type KettlebellSession,
+} from '@/data'
 import { complexSummary, joinMeta } from '@/lib/format'
 import {
   pickDefaultComplex,
@@ -24,8 +34,9 @@ import { parseWholeNumber } from '@/lib/numbers'
 import { dayPath } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 
-/** Log a kettlebell session (/log/kettlebell, optionally ?date=YYYY-MM-DD). */
+/** Log a kettlebell session (/log/kettlebell?date=…) or edit one (/log/kettlebell/:id). */
 export function KettlebellLogScreen() {
+  const { id } = useParams()
   const [params] = useSearchParams()
   const dateParam = params.get('date') ?? ''
   const initialDate = isDateKey(dateParam) ? dateParam : todayKey()
@@ -33,41 +44,100 @@ export function KettlebellLogScreen() {
   // Everything the form needs to start, loaded once.
   const start = useLiveData(async () => {
     const active = await complexes.listActive()
+    if (id) {
+      const existing = await kettlebellSessions.get(id)
+      if (!existing) return { active, existing }
+      // Offer the session's own complex even if it's since been archived (or is gone —
+      // then rebuild it from the snapshot saved with the session).
+      const own =
+        active.find((c) => c.id === existing.complexId) ??
+        (await complexes.get(existing.complexId)) ??
+        complexFromSnapshot(existing)
+      return { active: active.some((c) => c.id === own.id) ? active : [...active, own], existing, chosen: own }
+    }
     const chosen = pickDefaultComplex(active, (await kettlebellSessions.latest())?.complexId)
     const lastForChosen = chosen && (await kettlebellSessions.latest(chosen.id))
     return { active, chosen, lastWeight: lastForChosen?.weightKg }
-  })
+  }, [id])
 
+  if (start && id && !start.existing) {
+    return (
+      <>
+        <BackLink to="/" label="Today" />
+        <ScreenHeader title="Not found" />
+        <p className="text-muted-foreground">This entry no longer exists.</p>
+      </>
+    )
+  }
+
+  const existing = start?.existing
   return (
     <>
-      <BackLink to="/log" label="Log" />
-      <ScreenHeader title="Kettlebell" subtitle="Log a session" />
+      <BackLink to={existing ? dayPath(existing.date) : '/log'} label={existing ? 'Back' : 'Log'} />
+      <ScreenHeader title="Kettlebell" subtitle={existing ? 'Edit session' : 'Log a session'} />
       {start && start.active.length === 0 && <NoComplexes />}
       {start && start.chosen && (
         <KettlebellForm
+          key={id ?? 'new'}
           active={start.active}
-          initial={{
-            date: initialDate,
-            complexId: start.chosen.id,
-            weightKg: start.lastWeight === undefined ? '' : String(start.lastWeight),
-            rounds: '',
-            durationMin: String(start.chosen.durationMin),
-            notes: '',
-          }}
+          existing={existing}
+          initial={
+            existing
+              ? {
+                  date: existing.date,
+                  complexId: existing.complexId,
+                  weightKg: existing.weightKg === undefined ? '' : String(existing.weightKg),
+                  rounds: existing.rounds === undefined ? '' : String(existing.rounds),
+                  durationMin: existing.durationMin === undefined ? '' : String(existing.durationMin),
+                  notes: existing.notes ?? '',
+                }
+              : {
+                  date: initialDate,
+                  complexId: start.chosen.id,
+                  weightKg: start.lastWeight === undefined ? '' : String(start.lastWeight),
+                  rounds: '',
+                  durationMin: String(start.chosen.durationMin),
+                  notes: '',
+                }
+          }
         />
       )}
     </>
   )
 }
 
-function KettlebellForm({ active, initial }: { active: Complex[]; initial: KettlebellFormValues }) {
+function complexFromSnapshot(session: KettlebellSession): Complex {
+  return {
+    id: session.complexId,
+    name: session.complexSnapshot.name,
+    movements: session.complexSnapshot.movements,
+    format: 'amrap',
+    durationMin: session.durationMin ?? 20,
+    archived: true,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+  }
+}
+
+function KettlebellForm({
+  active,
+  existing,
+  initial,
+}: {
+  active: Complex[]
+  existing?: KettlebellSession
+  initial: KettlebellFormValues
+}) {
   const navigate = useNavigate()
   const [values, setValues] = useState(initial)
   const [errors, setErrors] = useState<KettlebellFormErrors>({})
   const [saving, setSaving] = useState(false)
 
   const complex = active.find((c) => c.id === values.complexId)
-  const last = useLiveData(() => kettlebellSessions.latest(values.complexId), [values.complexId])
+  const last = useLiveData(
+    async () => (existing ? undefined : kettlebellSessions.latest(values.complexId)),
+    [values.complexId, existing],
+  )
 
   const set = <K extends keyof KettlebellFormValues>(key: K, value: KettlebellFormValues[K]) => {
     setValues((v) => ({ ...v, [key]: value }))
@@ -92,7 +162,16 @@ function KettlebellForm({ active, initial }: { active: Complex[]; initial: Kettl
     setErrors(result.errors)
     if (!result.session) return
     setSaving(true)
-    await kettlebellSessions.create(result.session)
+    if (existing) {
+      // Same complex as before → keep the movements it was actually done with.
+      const session =
+        result.session.complexId === existing.complexId
+          ? { ...result.session, complexSnapshot: existing.complexSnapshot }
+          : result.session
+      await kettlebellSessions.replace(existing.id, session)
+    } else {
+      await kettlebellSessions.create(result.session)
+    }
     navigate(dayPath(result.session.date))
   }
 
@@ -240,8 +319,15 @@ function KettlebellForm({ active, initial }: { active: Complex[]; initial: Kettl
       </Card>
 
       <Button type="submit" size="lg" className="w-full" disabled={saving}>
-        Save session
+        {existing ? 'Save changes' : 'Save session'}
       </Button>
+      {existing && (
+        <DeleteEntryButton
+          what="session"
+          onDelete={() => kettlebellSessions.remove(existing.id)}
+          onDeleted={() => navigate(dayPath(existing.date))}
+        />
+      )}
     </form>
   )
 }
