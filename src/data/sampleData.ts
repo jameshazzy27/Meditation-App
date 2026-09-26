@@ -24,7 +24,12 @@ function buildSampleData() {
   const complex: Complex = {
     id: ids.complex,
     name: 'Sample A',
-    movements: ['Swing', 'Clean', 'Press', 'Front squat'],
+    movements: [
+      { name: 'Swing', reps: 15 },
+      { name: 'Clean', reps: 5, eachArm: true },
+      { name: 'Press', reps: 5, eachArm: true },
+      { name: 'Front squat', reps: 10 },
+    ],
     format: 'amrap',
     durationMin: 20,
     targetRounds: 6,

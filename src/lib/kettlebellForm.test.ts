@@ -8,7 +8,7 @@ import { parseDecimal } from './numbers'
 const complex = (id: string, name = id): Complex => ({
   id,
   name,
-  movements: ['Swing × 20', 'Goblet squat × 12'],
+  movements: [{ name: 'Swing', reps: 20 }, { name: 'Goblet squat', reps: 12, eachArm: true }],
   format: 'amrap',
   durationMin: 20,
   archived: false,
@@ -50,14 +50,17 @@ describe('validateKettlebellForm', () => {
     expect(session).toEqual({
       date: '2026-09-26',
       complexId: 'a',
-      complexSnapshot: { name: 'A', movements: ['Swing × 20', 'Goblet squat × 12'] },
+      complexSnapshot: {
+        name: 'A',
+        movements: [{ name: 'Swing', reps: 20 }, { name: 'Goblet squat', reps: 12, eachArm: true }],
+      },
       weightKg: 12.5,
       rounds: 6,
       durationMin: 20,
       notes: '+ swings',
     })
     // The snapshot is a copy: editing the complex later must not change the session.
-    a.movements.push('Press')
+    a.movements.push({ name: 'Press' })
     expect(session!.complexSnapshot.movements).toHaveLength(2)
   })
 

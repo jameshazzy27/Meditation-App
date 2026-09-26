@@ -14,8 +14,10 @@ import {
   complexToForm,
   emptyComplexForm,
   validateComplexForm,
+  emptyMovement,
   type ComplexFormErrors,
   type ComplexFormValues,
+  type MovementFormValues,
 } from '@/lib/complexForm'
 import { cn } from '@/lib/utils'
 
@@ -48,8 +50,7 @@ function ComplexForm({ existing }: { existing?: Complex }) {
   )
   const [errors, setErrors] = useState<ComplexFormErrors>({})
   const [saving, setSaving] = useState(false)
-  const movementInputs = useRef<(HTMLTextAreaElement | null)[]>([])
-  const focusMovement = useRef<number | null>(null)
+  const focusTarget = useRef<{ index: number; field: 'name' | 'reps' } | null>(null)
 
   const set = <K extends keyof ComplexFormValues>(key: K, value: ComplexFormValues[K]) => {
     setValues((v) => ({ ...v, [key]: value }))
@@ -57,26 +58,38 @@ function ComplexForm({ existing }: { existing?: Complex }) {
     setErrors(({ [key]: _fixed, ...rest }) => rest)
   }
 
-  function setMovement(index: number, text: string) {
-    set('movements', values.movements.map((m, i) => (i === index ? text : m)))
+  function setMovement(index: number, changes: Partial<MovementFormValues>) {
+    set(
+      'movements',
+      values.movements.map((m, i) => (i === index ? { ...m, ...changes } : m)),
+    )
   }
 
   function addMovement(after = values.movements.length - 1) {
     const next = [...values.movements]
-    next.splice(after + 1, 0, '')
-    focusMovement.current = after + 1
+    next.splice(after + 1, 0, emptyMovement())
+    focusTarget.current = { index: after + 1, field: 'name' }
     set('movements', next)
   }
 
   function removeMovement(index: number) {
     const next = values.movements.filter((_, i) => i !== index)
-    set('movements', next.length ? next : [''])
+    set('movements', next.length ? next : [emptyMovement()])
   }
 
   function moveMovement(index: number, by: -1 | 1) {
     const next = [...values.movements]
     ;[next[index], next[index + by]] = [next[index + by], next[index]]
     set('movements', next)
+  }
+
+  /** Puts the cursor in a field once it exists (after adding a row). */
+  const focusWhenReady = (index: number, field: 'name' | 'reps') => (el: HTMLElement | null) => {
+    const target = focusTarget.current
+    if (el && target?.index === index && target.field === field) {
+      el.focus()
+      focusTarget.current = null
+    }
   }
 
   async function save(event: FormEvent) {
@@ -140,53 +153,86 @@ function ComplexForm({ existing }: { existing?: Complex }) {
         <Card>
           <CardHeader>
             <CardTitle>Movements</CardTitle>
-            <CardDescription>In order — one full pass is one round. Include reps if you like.</CardDescription>
+            <CardDescription>In order — one full pass is one round. Reps are optional.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {values.movements.map((movement, index) => (
-              <div key={index} className="flex items-start gap-1">
-                <span className="w-5 shrink-0 pt-3 text-center text-sm font-medium text-muted-foreground tabular-nums">
-                  {index + 1}
-                </span>
-                {/* Grows to fit long names; Enter adds the next movement instead of a new line. */}
-                <Textarea
-                  ref={(el) => {
-                    movementInputs.current[index] = el
-                    if (el && focusMovement.current === index) {
-                      el.focus()
-                      focusMovement.current = null
-                    }
-                  }}
-                  rows={1}
-                  aria-label={`Movement ${index + 1}`}
-                  value={movement}
-                  onChange={(e) => setMovement(index, e.target.value.replace(/\n/g, ' '))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addMovement(index)
-                    }
-                  }}
-                  placeholder={index === 0 ? 'Kettlebell swings × 20' : 'Next movement'}
-                  enterKeyHint="next"
-                  className="min-h-11 resize-none px-3"
-                  aria-invalid={!!errors.movements && !movement.trim()}
-                />
-                <div className="flex shrink-0 flex-col">
-                  <IconButton label="Move up" disabled={index === 0} onClick={() => moveMovement(index, -1)}>
-                    <ArrowUp />
-                  </IconButton>
-                  <IconButton
-                    label="Move down"
-                    disabled={index === values.movements.length - 1}
-                    onClick={() => moveMovement(index, 1)}
-                  >
-                    <ArrowDown />
+              <div key={index} className="space-y-2 rounded-2xl border bg-muted/40 p-2.5">
+                <div className="flex items-start gap-1.5">
+                  <span className="w-5 shrink-0 pt-3 text-center text-sm font-medium text-muted-foreground tabular-nums">
+                    {index + 1}
+                  </span>
+                  {/* Grows to fit long names; Enter moves on to the reps box instead of a new line. */}
+                  <Textarea
+                    ref={focusWhenReady(index, 'name')}
+                    rows={1}
+                    aria-label={`Movement ${index + 1}`}
+                    value={movement.name}
+                    onChange={(e) => setMovement(index, { name: e.target.value.replace(/\n/g, ' ') })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        document.getElementById(`reps-${index}`)?.focus()
+                      }
+                    }}
+                    placeholder={index === 0 ? 'e.g. Kettlebell swings' : 'Movement name'}
+                    enterKeyHint="next"
+                    className="min-h-11 resize-none px-3"
+                    aria-invalid={!!errors.movements && !movement.name.trim() && index === 0}
+                  />
+                  <IconButton label={`Remove movement ${index + 1}`} onClick={() => removeMovement(index)} tall>
+                    <X />
                   </IconButton>
                 </div>
-                <IconButton label={`Remove movement ${index + 1}`} onClick={() => removeMovement(index)} tall>
-                  <X />
-                </IconButton>
+                <div className="flex items-center gap-2 pl-6.5">
+                  <div className="relative w-24 shrink-0">
+                    <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
+                      ×
+                    </span>
+                    <Input
+                      id={`reps-${index}`}
+                      ref={focusWhenReady(index, 'reps')}
+                      aria-label={`Reps for movement ${index + 1}`}
+                      inputMode="numeric"
+                      value={movement.reps}
+                      onChange={(e) => setMovement(index, { reps: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          addMovement(index)
+                        }
+                      }}
+                      placeholder="reps"
+                      enterKeyHint="next"
+                      className="h-10 pl-7 tabular-nums"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    aria-pressed={movement.eachArm}
+                    onClick={() => setMovement(index, { eachArm: !movement.eachArm })}
+                    className={cn(
+                      'h-10 shrink-0 rounded-xl px-3 text-sm font-medium transition-colors',
+                      movement.eachArm
+                        ? 'bg-kettlebell text-white dark:text-background'
+                        : 'border bg-card text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    Each arm
+                  </button>
+                  <div className="ml-auto flex shrink-0">
+                    <IconButton label="Move up" disabled={index === 0} onClick={() => moveMovement(index, -1)}>
+                      <ArrowUp />
+                    </IconButton>
+                    <IconButton
+                      label="Move down"
+                      disabled={index === values.movements.length - 1}
+                      onClick={() => moveMovement(index, 1)}
+                    >
+                      <ArrowDown />
+                    </IconButton>
+                  </div>
+                </div>
               </div>
             ))}
             {errors.movements && <p className="text-sm text-destructive">{errors.movements}</p>}
@@ -285,7 +331,7 @@ function IconButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={cn('w-8 text-muted-foreground disabled:opacity-25', tall ? 'h-11' : 'h-5.5 rounded-md')}
+      className={cn('w-9 text-muted-foreground disabled:opacity-25', tall ? 'h-11' : 'h-10')}
     >
       {children}
     </Button>

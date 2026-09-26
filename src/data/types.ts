@@ -23,10 +23,18 @@ export interface Run extends DayEntry {
   notes?: string
 }
 
+/** One movement in a complex, e.g. "Renegade rows × 6 each arm". */
+export interface Movement {
+  name: string
+  reps?: number
+  /** True when the reps are done on each arm (so 6 means 6 left + 6 right). */
+  eachArm?: boolean
+}
+
 /** A user-editable kettlebell routine (A, B, C, D...). */
 export interface Complex extends Timestamps {
   name: string
-  movements: string[]
+  movements: Movement[]
   format: 'amrap'
   durationMin: number
   targetRounds?: number
@@ -36,7 +44,7 @@ export interface Complex extends Timestamps {
 export interface KettlebellSession extends DayEntry {
   complexId: string
   /** Copy of the complex at the time, so history stays accurate if the complex is edited later. */
-  complexSnapshot: { name: string; movements: string[] }
+  complexSnapshot: { name: string; movements: Movement[] }
   weightKg?: number
   rounds?: number
   durationMin?: number

@@ -21,8 +21,8 @@ async function clearAll() {
 
 /** A realistic spread of data, including optional fields left out. */
 async function fillWithData() {
-  const a = await complexes.create({ name: 'A', movements: ['Swing × 20', 'Goblet squat × 12'], format: 'amrap', durationMin: 20, targetRounds: 6, archived: false })
-  await complexes.create({ name: 'Old', movements: ['Halo'], format: 'amrap', durationMin: 10, archived: true })
+  const a = await complexes.create({ name: 'A', movements: [{ name: 'Swing', reps: 20 }, { name: 'Goblet squat', reps: 12 }], format: 'amrap', durationMin: 20, targetRounds: 6, archived: false })
+  await complexes.create({ name: 'Old', movements: [{ name: 'Halo', reps: 10, eachArm: true }], format: 'amrap', durationMin: 10, archived: true })
   await kettlebellSessions.create({ date: '2026-09-20', complexId: a.id, complexSnapshot: { name: 'A', movements: a.movements }, weightKg: 12, rounds: 6, durationMin: 20, notes: '+ swings' })
   await runs.create({ date: '2026-09-21', runType: 'long', distanceKm: 12.1, durationSec: 3920, notes: 'River' })
   await runs.create({ date: '2026-09-22', runType: 'intervals' })
@@ -42,7 +42,7 @@ describe('backup', () => {
   it('round-trips every table exactly: export → wipe → import', async () => {
     await fillWithData()
     const before = await exportBackup()
-    expect(before).toMatchObject({ app: 'aura', schemaVersion: 1 })
+    expect(before).toMatchObject({ app: 'aura', schemaVersion: 2 })
 
     // Simulate saving the file and clearing the browser's data.
     const file = JSON.parse(JSON.stringify(before))
@@ -66,7 +66,7 @@ describe('backup', () => {
     await fillWithData()
     const file = await exportBackup()
     const [mood] = await moods.list()
-    const run = (await runs.list())[0]
+    const run = (await runs.list()).find((r) => r.runType === 'long')!
 
     // After the backup: edit a mood (app copy is newer), add a new run.
     await new Promise((r) => setTimeout(r, 5))

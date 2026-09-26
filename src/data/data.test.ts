@@ -63,20 +63,20 @@ describe('records', () => {
   })
 
   it('remove deletes the record', async () => {
-    const c = await complexes.create({ name: 'A', movements: ['Swing'], format: 'amrap', durationMin: 20, archived: false })
+    const c = await complexes.create({ name: 'A', movements: [{ name: 'Swing' }], format: 'amrap', durationMin: 20, archived: false })
     await complexes.remove(c.id)
     expect(await complexes.get(c.id)).toBeUndefined()
   })
 
   it('getEntriesForDay returns only that day, oldest first', async () => {
     const day = '2026-09-10'
-    const c = await complexes.create({ name: 'A', movements: ['Swing'], format: 'amrap', durationMin: 20, archived: false })
+    const c = await complexes.create({ name: 'A', movements: [{ name: 'Swing' }], format: 'amrap', durationMin: 20, archived: false })
     const first = await moods.create({ date: day, rating: 2, tags: [] })
     await new Promise((r) => setTimeout(r, 5))
     const second = await moods.create({ date: day, rating: 4, tags: [] })
     await moods.create({ date: addDays(day, 1), rating: 5, tags: [] })
     await runs.create({ date: day, runType: 'intervals' })
-    await kettlebellSessions.create({ date: day, complexId: c.id, complexSnapshot: { name: 'A', movements: ['Swing'] } })
+    await kettlebellSessions.create({ date: day, complexId: c.id, complexSnapshot: { name: 'A', movements: [{ name: 'Swing' }] } })
     await meditations.create({ date: day, durationSec: 600, hrSamples: [] })
 
     const entries = await getEntriesForDay(day)
@@ -109,7 +109,7 @@ describe('complexes', () => {
   })
 
   const make = (name: string) =>
-    complexes.create({ name, movements: ['Swing'], format: 'amrap', durationMin: 20, archived: false })
+    complexes.create({ name, movements: [{ name: 'Swing' }], format: 'amrap', durationMin: 20, archived: false })
 
   it('lists active complexes by name and archived ones separately', async () => {
     const c = await make('C')
@@ -130,7 +130,7 @@ describe('complexes', () => {
   it('can only be deleted if no session uses it', async () => {
     const used = await make('A')
     const unused = await make('B')
-    await kettlebellSessions.create({ date: '2026-09-01', complexId: used.id, complexSnapshot: { name: 'A', movements: ['Swing'] } })
+    await kettlebellSessions.create({ date: '2026-09-01', complexId: used.id, complexSnapshot: { name: 'A', movements: [{ name: 'Swing' }] } })
 
     await expect(complexes.remove(used.id)).rejects.toThrow('archive it instead')
     expect(await complexes.get(used.id)).toBeDefined()
@@ -147,7 +147,7 @@ describe('kettlebellSessions.latest', () => {
   })
 
   it('finds the most recently dated session, overall or per complex', async () => {
-    const snap = { name: 'A', movements: ['Swing'] }
+    const snap = { name: 'A', movements: [{ name: 'Swing' }] }
     expect(await kettlebellSessions.latest()).toBeUndefined()
     await kettlebellSessions.create({ date: '2026-09-03', complexId: 'a', complexSnapshot: snap, weightKg: 12 })
     const newest = await kettlebellSessions.create({ date: '2026-09-05', complexId: 'b', complexSnapshot: snap })

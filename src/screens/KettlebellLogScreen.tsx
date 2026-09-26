@@ -224,7 +224,13 @@ function KettlebellForm({
               {complex.movements.map((movement, i) => (
                 <li key={i} className="flex gap-3 text-sm">
                   <span className="w-4 shrink-0 text-right font-medium text-kettlebell tabular-nums">{i + 1}</span>
-                  <span>{movement}</span>
+                  <span className="flex-1">{movement.name}</span>
+                  {(movement.reps !== undefined || movement.eachArm) && (
+                    <span className="shrink-0 text-muted-foreground tabular-nums">
+                      {movement.reps !== undefined && `× ${movement.reps}`}
+                      {movement.eachArm && ' each arm'}
+                    </span>
+                  )}
                 </li>
               ))}
             </ol>

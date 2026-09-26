@@ -37,9 +37,15 @@ interface Run {
   notes?: string;
 }
 
+interface Movement {            // e.g. "Renegade rows × 6 each arm"
+  name: string;
+  reps?: number;
+  eachArm?: boolean;           // reps are done on each arm
+}
+
 interface Complex {            // user-editable kettlebell routine (A, B, C, D...)
   id: string; name: string;    // e.g. "A"
-  movements: string[];         // e.g. ["Swing", "Goblet squat", ...]
+  movements: Movement[];
   format: 'amrap';
   durationMin: number;         // default 20
   targetRounds?: number;       // e.g. 6
@@ -50,7 +56,7 @@ interface Complex {            // user-editable kettlebell routine (A, B, C, D..
 interface KettlebellSession {
   id: string; date: string; createdAt: string; updatedAt: string;
   complexId: string;
-  complexSnapshot: { name: string; movements: string[] }; // keeps history accurate if the complex is edited later
+  complexSnapshot: { name: string; movements: Movement[] }; // keeps history accurate if the complex is edited later
   weightKg?: number;
   rounds?: number;
   durationMin?: number;
@@ -74,7 +80,11 @@ interface MeditationSession {   // Phase 3
 }
 ```
 
+## Schema versions
+- **1** — first version.
+- **2** — movements changed from text (`"Swing × 20"`) to `{ name, reps, eachArm }`. Old databases and v1 backup files are upgraded automatically (`src/data/db.ts`, `src/data/backup.ts`).
+
 ## Export format
 ```json
-{ "app": "aura", "schemaVersion": 1, "exportedAt": "...", "data": { "runs": [], "complexes": [], "kettlebellSessions": [], "moods": [], "meditations": [] } }
+{ "app": "aura", "schemaVersion": 2, "exportedAt": "...", "data": { "runs": [], "complexes": [], "kettlebellSessions": [], "moods": [], "meditations": [] } }
 ```

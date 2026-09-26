@@ -7,7 +7,7 @@ import { ScreenHeader } from '@/components/ScreenHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { complexes, useLiveData } from '@/data'
-import { complexSummary } from '@/lib/format'
+import { complexSummary, formatMovement } from '@/lib/format'
 
 export function ComplexesScreen() {
   const active = useLiveData(() => complexes.listActive())
@@ -28,7 +28,7 @@ export function ComplexesScreen() {
                   <p className="font-semibold">{complex.name}</p>
                   <p className="text-sm text-muted-foreground">{complexSummary(complex)}</p>
                   <p className="mt-1 truncate text-sm text-muted-foreground/80">
-                    {complex.movements.join(' · ')}
+                    {complex.movements.map(formatMovement).join(' · ')}
                   </p>
                 </div>
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" />

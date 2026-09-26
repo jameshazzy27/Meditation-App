@@ -1,7 +1,7 @@
 import { EntryCard, Note } from '@/components/EntryCard'
 import { Badge } from '@/components/ui/badge'
 import type { DayEntries } from '@/data'
-import { formatDuration, formatPace, formatTime, joinMeta, runTypeLabels } from '@/lib/format'
+import { formatDuration, formatMovement, formatPace, formatTime, joinMeta, runTypeLabels } from '@/lib/format'
 import { moodLevels, type MoodRating } from '@/lib/mood'
 import { cn } from '@/lib/utils'
 
@@ -59,7 +59,7 @@ export function DayEntryList({ day }: { day: DayEntries }) {
             session.durationMin !== undefined && `${session.durationMin} min`,
           )}
         >
-          <p className="text-sm text-muted-foreground">{session.complexSnapshot.movements.join(' · ')}</p>
+          <p className="text-sm text-muted-foreground">{session.complexSnapshot.movements.map(formatMovement).join(' · ')}</p>
           {session.notes && <Note>{session.notes}</Note>}
         </EntryCard>
       ))}

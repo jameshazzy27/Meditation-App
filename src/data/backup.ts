@@ -2,7 +2,8 @@ import type { Table } from 'dexie'
 
 import { SCHEMA_VERSION, db } from './db'
 import { isDateKey } from './dates'
-import type { Complex, KettlebellSession, MeditationSession, MoodEntry, Run } from './types'
+import { movementFromText } from './movements'
+import type { Complex, KettlebellSession, MeditationSession, MoodEntry, Movement, Run } from './types'
 
 // Export / import of everything, in the format described in CLAUDE.md:
 // { app: 'aura', schemaVersion, exportedAt, data: { runs, complexes, kettlebellSessions, moods, meditations } }
@@ -97,6 +98,18 @@ function strList(o: Obj, key: string, where: string): string[] {
   if (!Array.isArray(v) || v.some((x) => typeof x !== 'string')) fail(where, `"${key}" should be a list of text`)
   return [...v]
 }
+/** A list of movements. Version 1 backups stored them as text, which is upgraded here. */
+function movementList(o: Obj, key: string, where: string): Movement[] {
+  const v = o[key]
+  if (!Array.isArray(v)) fail(where, `"${key}" should be a list`)
+  return v.map((m, i) => {
+    if (typeof m === 'string') return movementFromText(m)
+    const at = `${where}, movement ${i + 1}`
+    if (!isObj(m)) fail(at, 'is damaged')
+    if (m.eachArm !== undefined && typeof m.eachArm !== 'boolean') fail(at, '"eachArm" should be true or false')
+    return tidy({ name: str(m, 'name', at), reps: optNum(m, 'reps', at), eachArm: m.eachArm === true ? true : undefined })
+  })
+}
 function timestamp(o: Obj, key: string, where: string): string {
   const v = str(o, key, where)
   if (Number.isNaN(Date.parse(v))) fail(where, `"${key}" isn't a valid date and time`)
@@ -135,7 +148,7 @@ const checkers: { [K in keyof BackupData]: (o: Obj, where: string) => BackupData
     return tidy({
       ...base(o, where),
       name: str(o, 'name', where),
-      movements: strList(o, 'movements', where),
+      movements: movementList(o, 'movements', where),
       format: 'amrap' as const,
       durationMin: num(o, 'durationMin', where),
       targetRounds: optNum(o, 'targetRounds', where),
@@ -149,7 +162,7 @@ const checkers: { [K in keyof BackupData]: (o: Obj, where: string) => BackupData
       ...base(o, where),
       date: day(o, where),
       complexId: str(o, 'complexId', where),
-      complexSnapshot: { name: str(snap, 'name', where), movements: strList(snap, 'movements', where) },
+      complexSnapshot: { name: str(snap, 'name', where), movements: movementList(snap, 'movements', where) },
       weightKg: optNum(o, 'weightKg', where),
       rounds: optNum(o, 'rounds', where),
       durationMin: optNum(o, 'durationMin', where),
@@ -208,7 +221,7 @@ export function checkBackup(file: unknown): { ok: true; backup: Backup } | { ok:
       throw new BackupError('The backup file is damaged (no version number).')
     if (version > SCHEMA_VERSION)
       throw new BackupError('This backup was made by a newer version of Aura. Update the app, then try again.')
-    // Older versions would be upgraded here, one step at a time, when the data model changes.
+    // Older versions are upgraded as each record is checked (v1 → v2: text movements → { name, reps, eachArm }).
     if (!isObj(file.data)) throw new BackupError('The backup file is damaged (no data).')
 
     const data = {} as BackupData

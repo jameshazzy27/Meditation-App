@@ -1,4 +1,4 @@
-import type { Complex, RunType } from '@/data'
+import type { Complex, Movement, RunType } from '@/data'
 
 /** 1665 → "27:45", 3920 → "1:05:20" */
 export function formatDuration(totalSec: number): string {
@@ -39,4 +39,10 @@ export function complexSummary(complex: Complex): string {
     `${complex.durationMin} min AMRAP`,
     complex.targetRounds !== undefined && `target ${complex.targetRounds} rounds`,
   )
+}
+
+/** "Renegade rows × 6 each arm", "Kettlebell swings × 20", "Halos (each arm)" or just "Halos". */
+export function formatMovement(movement: Movement): string {
+  if (movement.reps === undefined) return movement.eachArm ? `${movement.name} (each arm)` : movement.name
+  return `${movement.name} × ${movement.reps}${movement.eachArm ? ' each arm' : ''}`
 }

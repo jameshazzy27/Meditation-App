@@ -29,6 +29,7 @@ export {
   type ImportMode,
 } from './backup'
 export { useLiveData } from './hooks'
+export { movementFromText } from './movements'
 export { addDays, fromDateKey, isDateKey, toDateKey, todayKey } from './dates'
 export type * from './types'
 
