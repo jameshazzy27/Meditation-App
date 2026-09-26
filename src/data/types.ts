@@ -72,3 +72,14 @@ export interface DayEntries {
   kettlebellSessions: KettlebellSession[]
   meditations: MeditationSession[]
 }
+
+/** A compact overview of one day, for the History list and calendar. */
+export interface DaySummary {
+  date: string
+  /** Mood ratings logged that day, in order. */
+  moodRatings: MoodRating[]
+  runCount: number
+  runKm: number
+  kettlebell: { name: string; rounds?: number }[]
+  meditationSec: number
+}

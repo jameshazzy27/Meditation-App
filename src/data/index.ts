@@ -8,6 +8,7 @@ import { db } from './db'
 export { SCHEMA_VERSION } from './db'
 export {
   complexes,
+  getDaySummaries,
   getEntriesForDay,
   isDayEmpty,
   kettlebellSessions,

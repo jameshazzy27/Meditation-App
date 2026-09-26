@@ -4,6 +4,7 @@ import {
   addDays,
   complexes,
   deleteSampleData,
+  getDaySummaries,
   getEntriesForDay,
   hasSampleData,
   initData,
@@ -180,5 +181,32 @@ describe('replace', () => {
     expect(replaced).toEqual({ id: run.id, createdAt: run.createdAt, updatedAt: replaced.updatedAt, date: '2026-09-02', runType: 'short' })
     expect(await runs.get(run.id)).toEqual(replaced)
     await runs.remove(run.id)
+  })
+})
+
+describe('getDaySummaries', () => {
+  beforeEach(async () => {
+    await deleteSampleData()
+    for (const r of await runs.list()) await runs.remove(r.id)
+    for (const m of await moods.list()) await moods.remove(m.id)
+    for (const s of await kettlebellSessions.list()) await kettlebellSessions.remove(s.id)
+    for (const m of await meditations.list()) await meditations.remove(m.id)
+  })
+
+  it('summarises each day with entries, newest first', async () => {
+    await runs.create({ date: '2026-09-01', runType: 'short', distanceKm: 5 })
+    await runs.create({ date: '2026-09-01', runType: 'intervals', distanceKm: 3.5 })
+    await runs.create({ date: '2026-09-03', runType: 'long' })
+    await moods.create({ date: '2026-09-01', rating: 2, tags: [] })
+    await new Promise((r) => setTimeout(r, 5))
+    await moods.create({ date: '2026-09-01', rating: 4, tags: [] })
+    await kettlebellSessions.create({ date: '2026-09-02', complexId: 'x', complexSnapshot: { name: 'A', movements: [] }, rounds: 7 })
+    await meditations.create({ date: '2026-09-02', durationSec: 600, hrSamples: [] })
+
+    const days = await getDaySummaries()
+    expect(days.map((d) => d.date)).toEqual(['2026-09-03', '2026-09-02', '2026-09-01'])
+    expect(days[2]).toEqual({ date: '2026-09-01', moodRatings: [2, 4], runCount: 2, runKm: 8.5, kettlebell: [], meditationSec: 0 })
+    expect(days[1]).toMatchObject({ kettlebell: [{ name: 'A', rounds: 7 }], meditationSec: 600, runCount: 0 })
+    expect(days[0]).toMatchObject({ runCount: 1, runKm: 0 })
   })
 })

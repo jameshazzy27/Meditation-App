@@ -5,6 +5,7 @@ import { newId } from './ids'
 import type {
   Complex,
   DayEntries,
+  DaySummary,
   KettlebellSession,
   MeditationSession,
   MoodEntry,
@@ -171,4 +172,33 @@ export async function getEntriesForDay(date: string): Promise<DayEntries> {
 
 export function isDayEmpty(day: DayEntries): boolean {
   return !day.moods.length && !day.runs.length && !day.kettlebellSessions.length && !day.meditations.length
+}
+
+/** One summary per day that has anything logged, newest day first. */
+export async function getDaySummaries(): Promise<DaySummary[]> {
+  const [allMoods, allRuns, allSessions, allMeditations] = await Promise.all([
+    db.moods.toArray(),
+    db.runs.toArray(),
+    db.kettlebellSessions.toArray(),
+    db.meditations.toArray(),
+  ])
+  const days = new Map<string, DaySummary>()
+  const day = (date: string) => {
+    let summary = days.get(date)
+    if (!summary) {
+      summary = { date, moodRatings: [], runCount: 0, runKm: 0, kettlebell: [], meditationSec: 0 }
+      days.set(date, summary)
+    }
+    return summary
+  }
+  for (const mood of allMoods.sort(byCreatedAt)) day(mood.date).moodRatings.push(mood.rating)
+  for (const run of allRuns) {
+    const summary = day(run.date)
+    summary.runCount += 1
+    summary.runKm += run.distanceKm ?? 0
+  }
+  for (const session of allSessions.sort(byCreatedAt))
+    day(session.date).kettlebell.push({ name: session.complexSnapshot.name, rounds: session.rounds })
+  for (const meditation of allMeditations) day(meditation.date).meditationSec += meditation.durationSec
+  return [...days.values()].sort((a, b) => b.date.localeCompare(a.date))
 }
