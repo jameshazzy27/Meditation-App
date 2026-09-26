@@ -2,13 +2,13 @@ import { ArrowLeft, Flame, Plus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import { EntryIcon } from '@/components/EntryIcon'
+import { EntryCard, Note } from '@/components/EntryCard'
 import { MoodScale } from '@/components/MoodScale'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { entryKinds, type EntryKind } from '@/lib/entryTypes'
 import { moodLevels, type MoodRating } from '@/lib/mood'
 import { cn } from '@/lib/utils'
@@ -164,38 +164,4 @@ function Swatch({ name, className }: { name: string; className: string }) {
       <p className="text-xs leading-tight text-muted-foreground">{name}</p>
     </div>
   )
-}
-
-function EntryCard({
-  kind,
-  title,
-  meta,
-  children,
-}: {
-  kind: EntryKind
-  title: string
-  meta: string
-  children?: ReactNode
-}) {
-  return (
-    <Card>
-      <CardContent className="flex gap-4">
-        <EntryIcon kind={kind} />
-        <div className="min-w-0 flex-1 space-y-2">
-          <div>
-            <p className={cn('text-xs font-medium tracking-wider uppercase', entryKinds[kind].text)}>
-              {entryKinds[kind].label}
-            </p>
-            <p className="font-semibold">{title}</p>
-            <p className="text-sm text-muted-foreground tabular-nums">{meta}</p>
-          </div>
-          {children}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function Note({ children }: { children: ReactNode }) {
-  return <p className="border-l-2 pl-3 text-sm text-muted-foreground italic">{children}</p>
 }

@@ -1,11 +1,19 @@
-import { ChevronRight, Palette } from 'lucide-react'
+import { ChevronRight, Palette, Trash2 } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { deleteSampleData, hasSampleData, useLiveData } from '@/data'
 
 export function SettingsScreen() {
+  const showSampleData = useLiveData(hasSampleData)
+
+  function removeSampleData() {
+    if (confirm('Remove all sample entries? Anything you have logged yourself stays.')) void deleteSampleData()
+  }
+
   return (
     <>
       <ScreenHeader title="Settings" />
@@ -27,6 +35,22 @@ export function SettingsScreen() {
             </Link>
           </CardContent>
         </Card>
+        {showSampleData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sample data</CardTitle>
+              <CardDescription>
+                Aura started with a few example entries so you can see how things look. Remove them
+                whenever you're ready — your own entries won't be touched.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" onClick={removeSampleData}>
+                <Trash2 /> Remove sample data
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         <Card className="border-dashed bg-transparent shadow-none">
           <CardHeader>
             <CardDescription>

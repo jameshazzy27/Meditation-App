@@ -1,6 +1,8 @@
 import { Angry, Frown, Laugh, Meh, Smile, type LucideIcon } from 'lucide-react'
 
-export type MoodRating = 1 | 2 | 3 | 4 | 5
+import type { MoodRating } from '@/data'
+
+export type { MoodRating }
 
 export const moodLevels: Record<MoodRating, { label: string; icon: LucideIcon; bg: string; text: string }> = {
   1: { label: 'Rough', icon: Angry, bg: 'bg-mood-1', text: 'text-mood-1' },

@@ -10,4 +10,4 @@ npm install
 npm run dev     # open the URL it prints (usually http://localhost:5173)
 ```
 
-Other commands: `npm run build` (production build), `npm run lint`.
+Other commands: `npm test` (automated checks), `npm run build` (production build), `npm run lint`.

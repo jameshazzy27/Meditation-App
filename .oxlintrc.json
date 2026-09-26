@@ -3,6 +3,21 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          { "name": "dexie", "message": "Only src/data/ may use Dexie. Import from '@/data' instead." },
+          { "name": "dexie-react-hooks", "message": "Use useLiveData from '@/data' instead." }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/data/**"],
+      "rules": { "no-restricted-imports": "off" }
+    }
+  ]
 }
