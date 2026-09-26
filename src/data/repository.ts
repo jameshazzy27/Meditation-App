@@ -61,9 +61,52 @@ function dayRepository<T extends StoredRecord & { date: string }>(table: Table<T
   }
 }
 
+// Complexes sort by name the way a person would: A, B, C … and "Complex 2" before "Complex 10".
+const byName = (a: Complex, b: Complex) =>
+  a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+
 export const runs = dayRepository<Run>(db.runs)
-export const complexes = repository<Complex>(db.complexes)
-export const kettlebellSessions = dayRepository<KettlebellSession>(db.kettlebellSessions)
+
+export const kettlebellSessions = {
+  ...dayRepository<KettlebellSession>(db.kettlebellSessions),
+  countForComplex(complexId: string): Promise<number> {
+    return db.kettlebellSessions.where('complexId').equals(complexId).count()
+  },
+}
+
+const complexRepository = repository<Complex>(db.complexes)
+export const complexes = {
+  ...complexRepository,
+
+  /** Complexes shown when logging a session, sorted by name. */
+  async listActive(): Promise<Complex[]> {
+    return (await db.complexes.toArray()).filter((c) => !c.archived).sort(byName)
+  },
+
+  /** Hidden complexes, kept so past sessions still make sense. */
+  async listArchived(): Promise<Complex[]> {
+    return (await db.complexes.toArray()).filter((c) => c.archived).sort(byName)
+  },
+
+  archive(id: string): Promise<Complex> {
+    return complexRepository.update(id, { archived: true })
+  },
+
+  restore(id: string): Promise<Complex> {
+    return complexRepository.update(id, { archived: false })
+  },
+
+  /**
+   * Deletes a complex only if no session has ever used it — otherwise it must
+   * be archived instead, so history is never left pointing at nothing.
+   */
+  async remove(id: string): Promise<void> {
+    const used = await kettlebellSessions.countForComplex(id)
+    if (used > 0) throw new Error('This complex has logged sessions — archive it instead.')
+    await complexRepository.remove(id)
+  },
+}
+
 export const moods = dayRepository<MoodEntry>(db.moods)
 export const meditations = dayRepository<MeditationSession>(db.meditations)
 

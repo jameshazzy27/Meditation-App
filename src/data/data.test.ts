@@ -97,3 +97,44 @@ describe('dates', () => {
     expect(isDateKey('2026-02-28')).toBe(true)
   })
 })
+
+describe('complexes', () => {
+  beforeEach(async () => {
+    await deleteSampleData()
+    for (const c of await complexes.list()) {
+      for (const s of await kettlebellSessions.list()) await kettlebellSessions.remove(s.id)
+      await complexes.remove(c.id)
+    }
+  })
+
+  const make = (name: string) =>
+    complexes.create({ name, movements: ['Swing'], format: 'amrap', durationMin: 20, archived: false })
+
+  it('lists active complexes by name and archived ones separately', async () => {
+    const c = await make('C')
+    await make('A')
+    await make('Complex 10')
+    await make('Complex 2')
+    const b = await make('b')
+    await complexes.archive(c.id)
+
+    expect((await complexes.listActive()).map((x) => x.name)).toEqual(['A', 'b', 'Complex 2', 'Complex 10'])
+    expect((await complexes.listArchived()).map((x) => x.name)).toEqual(['C'])
+
+    await complexes.restore(c.id)
+    await complexes.archive(b.id)
+    expect((await complexes.listActive()).map((x) => x.name)).toEqual(['A', 'C', 'Complex 2', 'Complex 10'])
+  })
+
+  it('can only be deleted if no session uses it', async () => {
+    const used = await make('A')
+    const unused = await make('B')
+    await kettlebellSessions.create({ date: '2026-09-01', complexId: used.id, complexSnapshot: { name: 'A', movements: ['Swing'] } })
+
+    await expect(complexes.remove(used.id)).rejects.toThrow('archive it instead')
+    expect(await complexes.get(used.id)).toBeDefined()
+    await complexes.remove(unused.id)
+    expect(await complexes.get(unused.id)).toBeUndefined()
+    expect(await kettlebellSessions.countForComplex(used.id)).toBe(1)
+  })
+})

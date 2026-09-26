@@ -1,4 +1,4 @@
-import type { RunType } from '@/data'
+import type { Complex, RunType } from '@/data'
 
 /** 1665 → "27:45", 3920 → "1:05:20" */
 export function formatDuration(totalSec: number): string {
@@ -30,4 +30,13 @@ export const runTypeLabels: Record<RunType, string> = {
 /** Joins the parts that exist with a middle dot: "5.2 km · 27:40 · 5:19/km" */
 export function joinMeta(...parts: (string | false | undefined | null)[]): string {
   return parts.filter(Boolean).join(' · ')
+}
+
+/** "5 movements · 20 min AMRAP · target 6 rounds" */
+export function complexSummary(complex: Complex): string {
+  return joinMeta(
+    `${complex.movements.length} ${complex.movements.length === 1 ? 'movement' : 'movements'}`,
+    `${complex.durationMin} min AMRAP`,
+    complex.targetRounds !== undefined && `target ${complex.targetRounds} rounds`,
+  )
 }

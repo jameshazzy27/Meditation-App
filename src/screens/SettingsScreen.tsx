@@ -1,14 +1,15 @@
-import { ChevronRight, Palette, Trash2 } from 'lucide-react'
+import { ChevronRight, Dumbbell, Palette, Trash2, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { deleteSampleData, hasSampleData, useLiveData } from '@/data'
+import { complexes, deleteSampleData, hasSampleData, useLiveData } from '@/data'
 
 export function SettingsScreen() {
   const showSampleData = useLiveData(hasSampleData)
+  const activeComplexes = useLiveData(() => complexes.listActive())
 
   function removeSampleData() {
     if (confirm('Remove all sample entries? Anything you have logged yourself stays.')) void deleteSampleData()
@@ -20,19 +21,27 @@ export function SettingsScreen() {
       <div className="space-y-4">
         <Card>
           <CardHeader>
+            <CardTitle>Kettlebell complexes</CardTitle>
+            <CardDescription>
+              {activeComplexes === undefined
+                ? '\u00a0'
+                : activeComplexes.length
+                  ? activeComplexes.map((c) => c.name).join(', ')
+                  : 'None yet — add the routines you train.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SettingsLink to="/settings/complexes" icon={Dumbbell} label="Manage complexes" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
             <CardTitle>Appearance</CardTitle>
             <CardDescription>Choose light or dark, or follow your phone.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ThemeToggle />
-            <Link
-              to="/settings/style"
-              className="flex items-center gap-3 rounded-xl bg-muted px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              <Palette className="size-4 text-primary" />
-              <span className="flex-1">Style preview</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
+            <SettingsLink to="/settings/style" icon={Palette} label="Style preview" />
           </CardContent>
         </Card>
         {showSampleData && (
@@ -54,11 +63,24 @@ export function SettingsScreen() {
         <Card className="border-dashed bg-transparent shadow-none">
           <CardHeader>
             <CardDescription>
-              Kettlebell complexes, export and import are coming in Steps 1.1 and 1.7.
+              Export and import are coming in Step 1.7.
             </CardDescription>
           </CardHeader>
         </Card>
       </div>
     </>
+  )
+}
+
+function SettingsLink({ to, icon: Icon, label }: { to: string; icon: LucideIcon; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-3 rounded-xl bg-muted px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+    >
+      <Icon className="size-4 text-primary" />
+      <span className="flex-1">{label}</span>
+      <ChevronRight className="size-4 text-muted-foreground" />
+    </Link>
   )
 }

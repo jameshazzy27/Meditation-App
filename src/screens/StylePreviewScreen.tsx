@@ -1,7 +1,7 @@
-import { ArrowLeft, Flame, Plus } from 'lucide-react'
+import { Flame, Plus } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
 
+import { BackLink } from '@/components/BackLink'
 import { EntryCard, Note } from '@/components/EntryCard'
 import { MoodScale } from '@/components/MoodScale'
 import { ScreenHeader } from '@/components/ScreenHeader'
@@ -20,11 +20,7 @@ export function StylePreviewScreen() {
 
   return (
     <>
-      <Button asChild variant="ghost" size="sm" className="-ml-3 mb-2 text-muted-foreground">
-        <Link to="/settings">
-          <ArrowLeft /> Settings
-        </Link>
-      </Button>
+      <BackLink to="/settings" label="Settings" />
       <ScreenHeader title="Style" subtitle="Aura's look, all in one place" />
 
       <div className="space-y-10">
