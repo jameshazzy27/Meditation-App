@@ -18,6 +18,16 @@ export {
   runs,
 } from './repository'
 export { deleteSampleData, hasSampleData } from './sampleData'
+export {
+  backupFileName,
+  checkBackup,
+  countBackup,
+  exportBackup,
+  importBackup,
+  type Backup,
+  type BackupCounts,
+  type ImportMode,
+} from './backup'
 export { useLiveData } from './hooks'
 export { addDays, fromDateKey, isDateKey, toDateKey, todayKey } from './dates'
 export type * from './types'

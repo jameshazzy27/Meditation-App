@@ -1,6 +1,7 @@
 import { ChevronRight, Dumbbell, Palette, Trash2, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { BackupCard } from '@/components/BackupCard'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
@@ -60,13 +61,7 @@ export function SettingsScreen() {
             </CardContent>
           </Card>
         )}
-        <Card className="border-dashed bg-transparent shadow-none">
-          <CardHeader>
-            <CardDescription>
-              Export and import are coming in Step 1.7.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <BackupCard />
       </div>
     </>
   )
