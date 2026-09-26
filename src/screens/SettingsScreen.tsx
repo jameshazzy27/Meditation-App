@@ -2,6 +2,7 @@ import { ChevronRight, Dumbbell, Palette, Trash2, type LucideIcon } from 'lucide
 import { Link } from 'react-router'
 
 import { BackupCard } from '@/components/BackupCard'
+import { InstallCard } from '@/components/InstallCard'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Button } from '@/components/ui/button'
@@ -62,6 +63,7 @@ export function SettingsScreen() {
           </Card>
         )}
         <BackupCard />
+        <InstallCard />
       </div>
     </>
   )
