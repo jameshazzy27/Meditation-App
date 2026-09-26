@@ -72,6 +72,14 @@ export const kettlebellSessions = {
   countForComplex(complexId: string): Promise<number> {
     return db.kettlebellSessions.where('complexId').equals(complexId).count()
   },
+
+  /** The most recently dated session — optionally only for one complex. */
+  async latest(complexId?: string): Promise<KettlebellSession | undefined> {
+    const sessions = complexId
+      ? await db.kettlebellSessions.where('complexId').equals(complexId).toArray()
+      : await db.kettlebellSessions.toArray()
+    return sessions.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))[0]
+  },
 }
 
 const complexRepository = repository<Complex>(db.complexes)

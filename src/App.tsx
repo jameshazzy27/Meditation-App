@@ -4,6 +4,7 @@ import { AppShell } from '@/components/AppShell'
 import { ComplexesScreen } from '@/screens/ComplexesScreen'
 import { ComplexFormScreen } from '@/screens/ComplexFormScreen'
 import { HistoryScreen } from '@/screens/HistoryScreen'
+import { KettlebellLogScreen } from '@/screens/KettlebellLogScreen'
 import { LogScreen } from '@/screens/LogScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
 import { StylePreviewScreen } from '@/screens/StylePreviewScreen'
@@ -16,6 +17,7 @@ export default function App() {
         <Route index element={<TodayScreen />} />
         <Route path="history" element={<HistoryScreen />} />
         <Route path="log" element={<LogScreen />} />
+        <Route path="log/kettlebell" element={<KettlebellLogScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="settings/style" element={<StylePreviewScreen />} />
         <Route path="settings/complexes" element={<ComplexesScreen />} />

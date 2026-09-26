@@ -3,12 +3,12 @@ import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
 import { BackLink } from '@/components/BackLink'
+import { Field } from '@/components/Field'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { complexes, kettlebellSessions, useLiveData, type Complex } from '@/data'
 import {
   complexToForm,
@@ -51,8 +51,11 @@ function ComplexForm({ existing }: { existing?: Complex }) {
   const movementInputs = useRef<(HTMLTextAreaElement | null)[]>([])
   const focusMovement = useRef<number | null>(null)
 
-  const set = <K extends keyof ComplexFormValues>(key: K, value: ComplexFormValues[K]) =>
+  const set = <K extends keyof ComplexFormValues>(key: K, value: ComplexFormValues[K]) => {
     setValues((v) => ({ ...v, [key]: value }))
+    // Once you change a field, its old error no longer applies.
+    setErrors(({ [key]: _fixed, ...rest }) => rest)
+  }
 
   function setMovement(index: number, text: string) {
     set('movements', values.movements.map((m, i) => (i === index ? text : m)))
@@ -258,31 +261,6 @@ function ArchiveOrDelete({ complex, onDeleted }: { complex: Complex; onDeleted: 
         )}
       </CardContent>
     </Card>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  htmlFor,
-  error,
-  children,
-}: {
-  label: string
-  hint?: string
-  htmlFor: string
-  error?: string
-  children: ReactNode
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={htmlFor}>
-        {label}
-        {hint && <span className="font-normal text-muted-foreground">{hint}</span>}
-      </Label>
-      {children}
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
   )
 }
 

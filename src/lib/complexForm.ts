@@ -1,4 +1,5 @@
 import type { Complex, NewRecord } from '@/data'
+import { parseWholeNumber } from '@/lib/numbers'
 
 export const DEFAULT_DURATION_MIN = 20
 
@@ -25,11 +26,6 @@ export function complexToForm(complex: Complex): ComplexFormValues {
   }
 }
 
-function wholeNumber(text: string): number | undefined {
-  const trimmed = text.trim()
-  return /^\d+$/.test(trimmed) ? Number(trimmed) : undefined
-}
-
 /**
  * Checks the form and turns it into a complex ready to save.
  * `otherNames` are the names of the other active complexes, to avoid two called "A".
@@ -48,13 +44,13 @@ export function validateComplexForm(
   const movements = values.movements.map((m) => m.trim()).filter(Boolean)
   if (!movements.length) errors.movements = 'Add at least one movement.'
 
-  const durationMin = wholeNumber(values.durationMin)
+  const durationMin = parseWholeNumber(values.durationMin)
   if (durationMin === undefined || durationMin < 1 || durationMin > 180)
     errors.durationMin = 'Enter minutes between 1 and 180.'
 
   let targetRounds: number | undefined
   if (values.targetRounds.trim()) {
-    targetRounds = wholeNumber(values.targetRounds)
+    targetRounds = parseWholeNumber(values.targetRounds)
     if (targetRounds === undefined || targetRounds < 1 || targetRounds > 999)
       errors.targetRounds = 'Enter a whole number of rounds, or leave it blank.'
   }

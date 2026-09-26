@@ -138,3 +138,23 @@ describe('complexes', () => {
     expect(await kettlebellSessions.countForComplex(used.id)).toBe(1)
   })
 })
+
+describe('kettlebellSessions.latest', () => {
+  beforeEach(async () => {
+    await deleteSampleData()
+    for (const s of await kettlebellSessions.list()) await kettlebellSessions.remove(s.id)
+  })
+
+  it('finds the most recently dated session, overall or per complex', async () => {
+    const snap = { name: 'A', movements: ['Swing'] }
+    expect(await kettlebellSessions.latest()).toBeUndefined()
+    await kettlebellSessions.create({ date: '2026-09-03', complexId: 'a', complexSnapshot: snap, weightKg: 12 })
+    const newest = await kettlebellSessions.create({ date: '2026-09-05', complexId: 'b', complexSnapshot: snap })
+    // Logged later, but for an earlier day — shouldn't count as the latest.
+    await kettlebellSessions.create({ date: '2026-09-01', complexId: 'a', complexSnapshot: snap, weightKg: 16 })
+
+    expect((await kettlebellSessions.latest())?.id).toBe(newest.id)
+    expect((await kettlebellSessions.latest('a'))?.weightKg).toBe(12)
+    expect(await kettlebellSessions.latest('zzz')).toBeUndefined()
+  })
+})
