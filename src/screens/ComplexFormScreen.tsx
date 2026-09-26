@@ -1,6 +1,6 @@
 import { Archive, ArrowDown, ArrowUp, Plus, RotateCcw, Trash2, X } from 'lucide-react'
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 
 import { BackLink } from '@/components/BackLink'
 import { Field } from '@/components/Field'
@@ -15,10 +15,12 @@ import {
   emptyComplexForm,
   validateComplexForm,
   emptyMovement,
+  templateToForm,
   type ComplexFormErrors,
   type ComplexFormValues,
   type MovementFormValues,
 } from '@/lib/complexForm'
+import { complexLibrary, type LibraryComplex } from '@/lib/complexLibrary'
 import { cn } from '@/lib/utils'
 
 const LIST = '/settings/complexes'
@@ -26,6 +28,9 @@ const LIST = '/settings/complexes'
 /** Add a new complex (/settings/complexes/new) or edit one (/settings/complexes/:id). */
 export function ComplexFormScreen() {
   const { id = 'new' } = useParams()
+  const [params] = useSearchParams()
+  // /settings/complexes/new?from=Zeus starts from a library complex.
+  const template = id === 'new' ? complexLibrary.find((c) => c.name === params.get('from')) : undefined
   const isNew = id === 'new'
   // Wrapped in an object so "still loading" (undefined) differs from "not found" ({ complex: undefined }).
   const loaded = useLiveData(async () => ({ complex: isNew ? undefined : await complexes.get(id) }), [id])
@@ -40,13 +45,13 @@ export function ComplexFormScreen() {
       </>
     )
   }
-  return <ComplexForm key={id} existing={loaded.complex} />
+  return <ComplexForm key={`${id}-${template?.name ?? ''}`} existing={loaded.complex} template={template} />
 }
 
-function ComplexForm({ existing }: { existing?: Complex }) {
+function ComplexForm({ existing, template }: { existing?: Complex; template?: LibraryComplex }) {
   const navigate = useNavigate()
   const [values, setValues] = useState<ComplexFormValues>(() =>
-    existing ? complexToForm(existing) : emptyComplexForm(),
+    existing ? complexToForm(existing) : template ? templateToForm(template) : emptyComplexForm(),
   )
   const [errors, setErrors] = useState<ComplexFormErrors>({})
   const [saving, setSaving] = useState(false)
@@ -106,10 +111,10 @@ function ComplexForm({ existing }: { existing?: Complex }) {
 
   return (
     <>
-      <BackLink to={LIST} label="Complexes" />
+      <BackLink to={template ? `${LIST}/library` : LIST} label={template ? 'Library' : 'Complexes'} />
       <ScreenHeader
         title={existing ? `Edit ${existing.name}` : 'New complex'}
-        subtitle={existing?.archived ? 'Archived' : 'Kettlebell AMRAP'}
+        subtitle={existing?.archived ? 'Archived' : template ? 'From the library — change anything you like' : 'Kettlebell AMRAP'}
       />
 
       <form onSubmit={save} noValidate className="space-y-4">

@@ -1,4 +1,4 @@
-import { ChevronRight, Plus, RotateCcw } from 'lucide-react'
+import { ChevronRight, Library, Plus, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { BackLink } from '@/components/BackLink'
@@ -42,18 +42,25 @@ export function ComplexesScreen() {
             <CardHeader className="text-center">
               <CardTitle>No complexes yet</CardTitle>
               <CardDescription>
-                Add the routines you train — each one is a list of movements you repeat for as many
-                rounds as you can.
+                Pick a ready-made complex from the library, or make your own — a list of movements you
+                repeat for as many rounds as you can.
               </CardDescription>
             </CardHeader>
           </Card>
         )}
 
-        <Button asChild size="lg" className="w-full">
-          <Link to="/settings/complexes/new">
-            <Plus /> Add complex
-          </Link>
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button asChild size="lg">
+            <Link to="/settings/complexes/library">
+              <Library /> From library
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="secondary">
+            <Link to="/settings/complexes/new">
+              <Plus /> Make your own
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {archived && archived.length > 0 && (

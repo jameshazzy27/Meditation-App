@@ -344,12 +344,12 @@ function NoComplexes() {
       <CardHeader className="text-center">
         <CardTitle>Add a complex first</CardTitle>
         <CardDescription>
-          Sessions are logged against one of your complexes — set up A, B, C in Settings.
+          Sessions are logged against one of your complexes — pick a ready-made one, or make your own in Settings.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center">
         <Button asChild>
-          <Link to="/settings/complexes/new">Add a complex</Link>
+          <Link to="/settings/complexes/library">Choose from the library</Link>
         </Button>
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 import type { Complex, Movement, NewRecord } from '@/data'
+import type { LibraryComplex } from '@/lib/complexLibrary'
 import { parseWholeNumber } from '@/lib/numbers'
 
 export const DEFAULT_DURATION_MIN = 20
@@ -26,15 +27,22 @@ export function emptyComplexForm(): ComplexFormValues {
   return { name: '', movements: [emptyMovement()], durationMin: String(DEFAULT_DURATION_MIN), targetRounds: '' }
 }
 
+const movementToForm = (m: Movement): MovementFormValues => ({
+  name: m.name,
+  reps: m.reps === undefined ? '' : String(m.reps),
+  eachArm: m.eachArm === true,
+})
+
+/** A new complex pre-filled from the library. */
+export function templateToForm(template: LibraryComplex): ComplexFormValues {
+  return { ...emptyComplexForm(), name: template.name, movements: template.movements.map(movementToForm) }
+}
+
 export function complexToForm(complex: Complex): ComplexFormValues {
   return {
     name: complex.name,
     movements: complex.movements.length
-      ? complex.movements.map((m) => ({
-          name: m.name,
-          reps: m.reps === undefined ? '' : String(m.reps),
-          eachArm: m.eachArm === true,
-        }))
+      ? complex.movements.map(movementToForm)
       : [emptyMovement()],
     durationMin: String(complex.durationMin),
     targetRounds: complex.targetRounds === undefined ? '' : String(complex.targetRounds),

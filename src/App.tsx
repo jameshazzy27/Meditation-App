@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router'
 
 import { AppShell } from '@/components/AppShell'
+import { ComplexLibraryScreen } from '@/screens/ComplexLibraryScreen'
 import { ComplexesScreen } from '@/screens/ComplexesScreen'
 import { ComplexFormScreen } from '@/screens/ComplexFormScreen'
 import { DayScreen } from '@/screens/DayScreen'
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="settings/style" element={<StylePreviewScreen />} />
         <Route path="settings/complexes" element={<ComplexesScreen />} />
+        <Route path="settings/complexes/library" element={<ComplexLibraryScreen />} />
         <Route path="settings/complexes/:id" element={<ComplexFormScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
