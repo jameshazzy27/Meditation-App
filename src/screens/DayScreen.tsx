@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useRef } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
 
+import { BackupReminder } from '@/components/BackupReminder'
 import { DayEntryList } from '@/components/DayEntryList'
 import { QuickMood } from '@/components/QuickMood'
 import { ScreenHeader } from '@/components/ScreenHeader'
@@ -66,6 +67,7 @@ export function DayScreen() {
       />
 
       <div className="space-y-3">
+        {isToday && <BackupReminder />}
         <QuickMood date={date} question={isToday ? 'How are you feeling?' : 'How was your mood?'} />
 
         {day && !isDayEmpty(day) && <DayEntryList day={day} />}

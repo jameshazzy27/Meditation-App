@@ -18,6 +18,8 @@ function isInstalled() {
 }
 
 const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
+// An iPhone browser with Bluetooth is one of the add-on browsers like Bluefy (Safari has none).
+const isBluetoothBrowserOnIOS = isIOS && !!navigator.bluetooth
 
 /** Settings → how to put Aura on the home screen, or confirmation that it's there. */
 export function InstallCard() {
@@ -69,6 +71,11 @@ export function InstallCard() {
           >
             <Download /> Install
           </Button>
+        ) : isBluetoothBrowserOnIOS ? (
+          <p className="text-sm">
+            For a home-screen icon that opens here: in the <strong>Shortcuts</strong> app, make a shortcut with{' '}
+            <strong>Open App → this browser</strong>, name it Aura, then <strong>Add to Home Screen</strong>.
+          </p>
         ) : isIOS ? (
           <p className="flex flex-wrap items-center gap-1 text-sm">
             In Safari, tap <Share className="inline size-4 text-primary" aria-label="Share" /> Share, then{' '}

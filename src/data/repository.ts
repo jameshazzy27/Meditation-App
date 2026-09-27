@@ -202,3 +202,9 @@ export async function getDaySummaries(): Promise<DaySummary[]> {
   for (const meditation of allMeditations) day(meditation.date).meditationSec += meditation.durationSec
   return [...days.values()].sort((a, b) => b.date.localeCompare(a.date))
 }
+
+/** True once anything at all has been logged (or a complex added). */
+export async function hasAnyEntries(): Promise<boolean> {
+  const counts = await Promise.all([db.runs, db.complexes, db.kettlebellSessions, db.moods, db.meditations].map((t) => t.count()))
+  return counts.some((n) => n > 0)
+}

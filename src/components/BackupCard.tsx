@@ -4,17 +4,14 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  backupFileName,
   checkBackup,
   countBackup,
-  exportBackup,
   importBackup,
   type Backup,
   type BackupCounts,
   type ImportMode,
 } from '@/data'
-
-const LAST_EXPORT_KEY = 'aura-last-export'
+import { saveBackupFile, useLastBackup } from '@/lib/backupFile'
 
 const countLabels: [keyof BackupCounts, string, string][] = [
   ['moods', 'mood', 'moods'],
@@ -31,40 +28,19 @@ function describeCounts(counts: BackupCounts): string {
   return parts.length ? parts.join(', ') : 'nothing'
 }
 
-function readLastExport(): string | null {
-  try {
-    return localStorage.getItem(LAST_EXPORT_KEY)
-  } catch {
-    return null
-  }
-}
-
 type Status = { kind: 'info' | 'error'; text: string } | null
 
 /** Settings → Backup: download everything as a file, or bring a file back in. */
 export function BackupCard() {
   const fileInput = useRef<HTMLInputElement>(null)
-  const [lastExport, setLastExport] = useState(readLastExport)
+  const lastExport = useLastBackup()
   const [pending, setPending] = useState<{ backup: Backup; fileName: string } | null>(null)
   const [status, setStatus] = useState<Status>(null)
   const [busy, setBusy] = useState(false)
 
   async function download() {
-    const backup = await exportBackup()
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = backupFileName()
-    link.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-    try {
-      localStorage.setItem(LAST_EXPORT_KEY, backup.exportedAt)
-    } catch {
-      // Only used for the "last backup" reminder.
-    }
-    setLastExport(backup.exportedAt)
-    setStatus({ kind: 'info', text: `Backup saved: ${describeCounts(countBackup(backup.data))}.` })
+    const counts = await saveBackupFile()
+    if (counts) setStatus({ kind: 'info', text: `Backup saved: ${describeCounts(counts)}.` })
   }
 
   async function chooseFile(file: File | undefined) {
@@ -113,8 +89,8 @@ export function BackupCard() {
       <CardHeader>
         <CardTitle>Backup</CardTitle>
         <CardDescription>
-          Everything lives on this device only. Save a backup file now and then — to your files, iCloud or
-          Google Drive — so nothing is lost if the phone is.
+          Everything lives inside this browser on this phone only. Save a backup now and then — to Files or
+          iCloud Drive — so nothing is lost if the phone, or the browser app, is.
           {lastExport && (
             <span className="mt-1 block">
               Last backup:{' '}

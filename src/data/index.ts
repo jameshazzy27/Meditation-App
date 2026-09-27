@@ -10,6 +10,7 @@ export {
   complexes,
   getDaySummaries,
   getEntriesForDay,
+  hasAnyEntries,
   isDayEmpty,
   kettlebellSessions,
   meditations,
