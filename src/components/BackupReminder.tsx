@@ -21,7 +21,7 @@ export function BackupReminder() {
       <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" />
       <div className="min-w-0 flex-1 space-y-3 text-sm">
         <div>
-          <p className="font-semibold">Time for a backup</p>
+          <p className="font-semibold">Guard your saga</p>
           <p className="text-muted-foreground">
             {days === undefined ? 'You haven’t saved a backup yet.' : `Your last backup was ${days} days ago.`} Your
             journal lives only in this app on this phone — save a copy to Files or iCloud.

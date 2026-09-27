@@ -73,7 +73,7 @@ function RunForm({ existing, initial }: { existing?: Run; initial: RunFormValues
     setSaving(true)
     if (existing) await runs.replace(existing.id, result.run)
     else await runs.create(result.run)
-    navigate(dayPath(result.run.date))
+    navigate(dayPath(result.run.date), { state: { saved: 'Run' } })
   }
 
   const timeBox = (key: 'hours' | 'minutes' | 'seconds', label: string, placeholder: string) => (
@@ -97,7 +97,7 @@ function RunForm({ existing, initial }: { existing?: Run; initial: RunFormValues
   return (
     <>
       <BackLink to={existing ? dayPath(existing.date) : '/log'} label={existing ? 'Back' : 'Log'} />
-      <ScreenHeader title="Run" subtitle={existing ? 'Edit run' : 'Log a run'} />
+      <ScreenHeader title="Run" subtitle={existing ? 'Edit run' : 'Log a run'} rune="ᛖ" />
 
       <form onSubmit={save} noValidate className="space-y-4">
         <Card>

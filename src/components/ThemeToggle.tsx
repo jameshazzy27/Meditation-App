@@ -12,7 +12,7 @@ const options: { value: ThemePreference; label: string; icon: LucideIcon }[] = [
 export function ThemeToggle() {
   const preference = useThemePreference()
   return (
-    <div role="radiogroup" aria-label="Appearance" className="grid grid-cols-3 gap-1 rounded-full bg-muted p-1">
+    <div role="radiogroup" aria-label="Appearance" className="grid grid-cols-3 gap-1 rounded-md bg-muted p-1">
       {options.map(({ value, label, icon: Icon }) => (
         <button
           key={value}
@@ -21,7 +21,7 @@ export function ThemeToggle() {
           aria-checked={preference === value}
           onClick={() => setThemePreference(value)}
           className={cn(
-            'flex items-center justify-center gap-1.5 rounded-full py-2 text-sm font-medium transition-all',
+            'flex items-center justify-center gap-1.5 rounded-sm py-2 text-sm font-medium transition-all',
             preference === value
               ? 'bg-card text-foreground shadow-soft'
               : 'text-muted-foreground hover:text-foreground',

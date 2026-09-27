@@ -40,7 +40,7 @@ export function OverviewTrends({ data, today }: { data: TrendsData; today: strin
           <Flame className="size-7" />
         </span>
         <div>
-          <p className="text-sm text-muted-foreground">Current streak</p>
+          <p className="text-sm text-muted-foreground">Unbroken chain</p>
           <p className="text-5xl font-semibold tracking-tight">
             {streak.current}
             <span className="ml-1.5 text-lg font-normal text-muted-foreground">{streak.current === 1 ? 'day' : 'days'}</span>
@@ -90,7 +90,7 @@ export function OverviewTrends({ data, today }: { data: TrendsData; today: strin
             value={now.daysLogged}
             unit="of 7"
             detail={<Change now={now.daysLogged} before={last.daysLogged} />}
-            className="p-3"
+            className="col-span-2 p-3"
           />
         </div>
         <p className="px-1 text-xs text-muted-foreground">Weeks run Monday to Sunday.</p>

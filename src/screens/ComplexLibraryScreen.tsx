@@ -18,7 +18,7 @@ export function ComplexLibraryScreen() {
   return (
     <>
       <BackLink to="/settings/complexes" label="Complexes" />
-      <ScreenHeader title="Library" subtitle="20 ready-made complexes" />
+      <ScreenHeader title="Library" subtitle="20 ready-made complexes" rune="ᚢ" />
       <p className="mb-5 px-1 text-sm text-muted-foreground">
         Single kettlebell, reps on each arm, unless marked. Tap one to add it — you can change the reps,
         name or minutes first. Too easy? Double the reps.

@@ -114,6 +114,7 @@ function ComplexForm({ existing, template }: { existing?: Complex; template?: Li
       <BackLink to={template ? `${LIST}/library` : LIST} label={template ? 'Library' : 'Complexes'} />
       <ScreenHeader
         title={existing ? `Edit ${existing.name}` : 'New complex'}
+        rune="ᚢ"
         subtitle={existing?.archived ? 'Archived' : template ? 'From the library — change anything you like' : 'Kettlebell AMRAP'}
       />
 

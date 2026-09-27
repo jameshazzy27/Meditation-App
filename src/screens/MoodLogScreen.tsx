@@ -74,13 +74,13 @@ function MoodForm({ existing, initial }: { existing?: MoodEntry; initial: MoodFo
     setSaving(true)
     if (existing) await moods.replace(existing.id, result.mood)
     else await moods.create(result.mood)
-    navigate(dayPath(result.mood.date))
+    navigate(dayPath(result.mood.date), { state: { saved: 'Mood' } })
   }
 
   return (
     <>
       <BackLink to={existing ? dayPath(existing.date) : '/log'} label={existing ? 'Back' : 'Log'} />
-      <ScreenHeader title="Mood" subtitle={existing ? 'Edit mood' : 'How are you feeling?'} />
+      <ScreenHeader title="Mood" subtitle={existing ? 'Edit mood' : 'How are you feeling?'} rune="ᚹ" />
 
       <form onSubmit={save} noValidate className="space-y-4">
         <Card>
@@ -103,7 +103,7 @@ function MoodForm({ existing, initial }: { existing?: MoodEntry; initial: MoodFo
                       aria-pressed={selected}
                       onClick={() => set('tags', toggleTag(values.tags, tag))}
                       className={cn(
-                        'h-9 rounded-full border px-3.5 text-sm font-medium transition-colors',
+                        'h-9 rounded-md border px-3.5 text-sm font-medium transition-colors',
                         selected
                           ? 'border-transparent bg-mood text-white dark:text-background'
                           : 'bg-card text-foreground hover:bg-accent',
@@ -117,7 +117,7 @@ function MoodForm({ existing, initial }: { existing?: MoodEntry; initial: MoodFo
                   <button
                     type="button"
                     onClick={() => setNewTag('')}
-                    className="flex h-9 items-center gap-1 rounded-full border border-dashed px-3.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+                    className="flex h-9 items-center gap-1 rounded-md border border-dashed px-3.5 text-sm font-medium text-muted-foreground hover:text-foreground"
                   >
                     <Plus className="size-4" /> New tag
                   </button>
@@ -137,7 +137,7 @@ function MoodForm({ existing, initial }: { existing?: MoodEntry; initial: MoodFo
                     onBlur={addNewTag}
                     placeholder="e.g. coffee"
                     enterKeyHint="done"
-                    className="h-9 w-36 rounded-full text-sm"
+                    className="h-9 w-36 rounded-md text-sm"
                   />
                 )}
               </div>

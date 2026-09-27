@@ -44,7 +44,7 @@ export function TrendsScreen() {
 
   return (
     <>
-      <ScreenHeader title="Trends" subtitle="How things are going" />
+      <ScreenHeader title="Trends" subtitle="Your saga so far" rune="ᛏ" />
       <div className="mb-5 space-y-2">
         <ChoiceChips<Section> label="Section" options={sections} value={section} onChange={(s) => update({ section: s })} />
         {/* One time range for everything below it. The overview is always "this week". */}

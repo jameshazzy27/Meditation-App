@@ -16,7 +16,7 @@ export function ComplexesScreen() {
   return (
     <>
       <BackLink to="/settings" label="Settings" />
-      <ScreenHeader title="Complexes" subtitle="Your kettlebell routines" />
+      <ScreenHeader title="Complexes" subtitle="Your kettlebell routines" rune="ᚢ" />
 
       <div className="space-y-3">
         {active?.map((complex) => (

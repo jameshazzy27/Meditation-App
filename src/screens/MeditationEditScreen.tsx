@@ -58,7 +58,7 @@ function MeditationForm({ session }: { session: MeditationSession }) {
   return (
     <>
       <BackLink to={back} label="Back" />
-      <ScreenHeader title="Meditation" subtitle="Session" />
+      <ScreenHeader title="Meditation" subtitle="Session" rune="ᛚ" />
       <form onSubmit={save} className="space-y-4">
         <Card>
           <CardContent className="grid grid-cols-2 gap-4">

@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-import { useRef } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 
 import { BackupReminder } from '@/components/BackupReminder'
 import { DayEntryList } from '@/components/DayEntryList'
@@ -9,6 +9,7 @@ import { ScreenHeader } from '@/components/ScreenHeader'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { addDays, fromDateKey, getEntriesForDay, isDateKey, isDayEmpty, todayKey, useLiveData } from '@/data'
+import { norseDayName } from '@/lib/norse'
 import { dayPath } from '@/lib/routes'
 
 /** Everything on one day: "/" is today, "/day/YYYY-MM-DD" any other day. */
@@ -19,6 +20,15 @@ export function DayScreen() {
   const navigate = useNavigate()
   const day = useLiveData(() => getEntriesForDay(date), [date])
   const touchStartX = useRef<number | null>(null)
+  // After saving, the form sends us here with what was saved; show "Skål!" briefly.
+  const location = useLocation()
+  const [saved, setSaved] = useState<string | null>(() => (location.state as { saved?: string } | null)?.saved ?? null)
+  useEffect(() => {
+    if (!saved) return
+    window.history.replaceState({ ...window.history.state, usr: null }, '') // don't show it again on refresh
+    const timer = setTimeout(() => setSaved(null), 2600)
+    return () => clearTimeout(timer)
+  }, [saved])
 
   if (!isDateKey(date) || date > today) return <Navigate to="/" replace />
   if (dateParam === today) return <Navigate to="/" replace />
@@ -51,9 +61,25 @@ export function DayScreen() {
         if (Math.abs(dx) > 80) go(dx > 0 ? -1 : 1)
       }}
     >
+      {saved && (
+        <div
+          role="status"
+          className="fixed inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-20 mx-auto max-w-sm animate-in fade-in slide-in-from-top-2 rounded-lg border-l-4 border-l-primary bg-card px-4 py-3 text-sm shadow-soft"
+        >
+          <span className="font-display font-bold">Skål!</span> {saved} saved.
+        </div>
+      )}
       <ScreenHeader
         title={title}
-        subtitle={subtitle}
+        rune="ᛞ"
+        subtitle={
+          <>
+            <span className="italic" title={norseDayName(fromDateKey(date)).meaning}>
+              {norseDayName(fromDateKey(date)).name}
+            </span>{' '}
+            · {subtitle}
+          </>
+        }
         action={
           <div className="flex gap-1">
             <Button variant="secondary" size="icon" aria-label="Previous day" onClick={() => go(-1)}>

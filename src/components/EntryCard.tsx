@@ -25,7 +25,7 @@ export function EntryCard({
   children?: ReactNode
 }) {
   const card = (
-    <Card className={cn(to && 'transition-colors hover:bg-accent/40')}>
+    <Card className={cn('border-l-4', entryKinds[kind].edge, to && 'transition-colors hover:bg-accent/40')}>
       <CardContent className="flex gap-4">
         {icon ?? <EntryIcon kind={kind} />}
         <div className="min-w-0 flex-1 space-y-2">

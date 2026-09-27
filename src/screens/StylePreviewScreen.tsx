@@ -21,7 +21,7 @@ export function StylePreviewScreen() {
   return (
     <>
       <BackLink to="/settings" label="Settings" />
-      <ScreenHeader title="Style" subtitle="Aura's look, all in one place" />
+      <ScreenHeader title="Style" subtitle="Aura's look, all in one place" rune="ᚨ" />
 
       <div className="space-y-10">
         <Section title="Appearance">
@@ -55,12 +55,12 @@ export function StylePreviewScreen() {
 
         <Section title="Typography">
           <div className="space-y-3">
-            <p className="font-display text-4xl font-medium tracking-tight">Breathe in, breathe out</p>
+            <p className="font-display text-4xl font-medium tracking-tight">Still as the fjord</p>
             <p className="font-display text-2xl font-medium">Section heading</p>
             <p className="text-base font-semibold">Card title</p>
             <p className="text-base leading-relaxed">
-              Body text is Geist — clean and easy to read on a small screen. Headings use Fraunces, a
-              soft serif that keeps the app feeling calm rather than clinical.
+              Body text is Alegreya Sans — warm and a little hand-made, with roots in calligraphy. Headings use
+              Cinzel, carved capitals like an inscription on stone. Runes mark each screen.
             </p>
             <p className="text-sm text-muted-foreground">Supporting text for descriptions and hints.</p>
             <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">Small label</p>

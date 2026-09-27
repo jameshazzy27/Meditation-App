@@ -23,7 +23,7 @@ export function BottomNav() {
   if (useIsFocusMode()) return null
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/85 backdrop-blur-md">
+    <nav className="fixed inset-x-0 bottom-0 z-10 border-t-2 border-border bg-card/95 backdrop-blur-md">
       <ul className="mx-auto grid max-w-md grid-cols-5 pb-[env(safe-area-inset-bottom)]">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = isTabActive(to, pathname)
@@ -39,7 +39,7 @@ export function BottomNav() {
               >
                 <span
                   className={cn(
-                    'grid h-8 w-12 place-items-center rounded-full transition-colors',
+                    'grid h-8 w-12 place-items-center rounded-md transition-colors',
                     active && 'bg-primary/12',
                   )}
                 >

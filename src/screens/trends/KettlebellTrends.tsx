@@ -57,7 +57,7 @@ export function KettlebellTrends({ data, start }: { data: TrendsData; start: str
             aria-checked={c.id === complex.id}
             onClick={() => setChosenId(c.id)}
             className={cn(
-              'h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-colors',
+              'h-9 shrink-0 rounded-md px-4 text-sm font-medium transition-colors',
               c.id === complex.id ? 'bg-kettlebell text-white dark:text-background' : 'bg-muted text-muted-foreground',
             )}
           >

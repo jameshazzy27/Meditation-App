@@ -30,7 +30,7 @@ export function HistoryScreen() {
 
   return (
     <>
-      <ScreenHeader title="History" subtitle={days ? daysLoggedLabel(days.length) : ' '} />
+      <ScreenHeader title="History" subtitle={days ? daysLoggedLabel(days.length) : ' '} rune="ᛟ" />
       <div className="mb-5">
         <ChoiceChips<View>
           label="View"

@@ -136,7 +136,7 @@ export function MeditateScreen() {
       ...(note && { notes: note }),
     })
     monitor.disconnect()
-    navigate(dayPath(date.current))
+    navigate(dayPath(date.current), { state: { saved: 'Meditation' } })
   }
 
   function discard() {
@@ -190,7 +190,7 @@ export function MeditateScreen() {
   return (
     <>
       <BackLink to="/log" label="Log" />
-      <ScreenHeader title="Meditate" subtitle="Settle in" />
+      <ScreenHeader title="Meditate" subtitle="Settle in, still as the fjord" rune="ᛚ" />
       <div className="space-y-4">
         <Card>
           <CardContent className="space-y-5">
@@ -391,7 +391,7 @@ function Summary({
   const hr = summariseHeartRate(samples)
   return (
     <>
-      <ScreenHeader title="Well done" subtitle="Session complete" />
+      <ScreenHeader title="Well done" subtitle="Calm as the fjord" rune="ᛚ" />
       <div className="space-y-4">
         <StatTile label="Meditated for" value={formatDuration(Math.round(elapsedSec))} />
         {hr && (

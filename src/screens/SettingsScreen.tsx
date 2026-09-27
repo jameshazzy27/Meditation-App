@@ -19,7 +19,7 @@ export function SettingsScreen() {
 
   return (
     <>
-      <ScreenHeader title="Settings" />
+      <ScreenHeader title="Settings" rune="ᚲ" />
       <div className="space-y-4">
         <Card>
           <CardHeader>

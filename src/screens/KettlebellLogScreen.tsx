@@ -74,7 +74,7 @@ export function KettlebellLogScreen() {
   return (
     <>
       <BackLink to={existing ? dayPath(existing.date) : '/log'} label={existing ? 'Back' : 'Log'} />
-      <ScreenHeader title="Kettlebell" subtitle={existing ? 'Edit session' : 'Log a session'} />
+      <ScreenHeader title="Kettlebell" subtitle={existing ? 'Edit session' : 'Log a session'} rune="ᚢ" />
       {start && start.active.length === 0 && <NoComplexes />}
       {start && start.chosen && (
         <KettlebellForm
@@ -172,7 +172,7 @@ function KettlebellForm({
     } else {
       await kettlebellSessions.create(result.session)
     }
-    navigate(dayPath(result.session.date))
+    navigate(dayPath(result.session.date), { state: { saved: 'Session' } })
   }
 
   const rounds = parseWholeNumber(values.rounds)

@@ -25,6 +25,7 @@ export function LogScreen() {
     <>
       <ScreenHeader
         title="Log"
+        rune="ᚱ"
         subtitle={
           date
             ? `Adding to ${fromDateKey(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}`
