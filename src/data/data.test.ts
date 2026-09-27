@@ -4,10 +4,13 @@ import {
   addDays,
   complexes,
   deleteSampleData,
+  fastingPlan,
+  fasts,
   getDaySummaries,
   getEntriesForDay,
   hasSampleData,
   initData,
+  isDayEmpty,
   isDateKey,
   kettlebellSessions,
   meditations,
@@ -205,8 +208,39 @@ describe('getDaySummaries', () => {
 
     const days = await getDaySummaries()
     expect(days.map((d) => d.date)).toEqual(['2026-09-03', '2026-09-02', '2026-09-01'])
-    expect(days[2]).toEqual({ date: '2026-09-01', moodRatings: [2, 4], runCount: 2, runKm: 8.5, kettlebell: [], meditationSec: 0 })
+    expect(days[2]).toEqual({ date: '2026-09-01', moodRatings: [2, 4], runCount: 2, runKm: 8.5, kettlebell: [], meditationSec: 0, fastHours: 0 })
     expect(days[1]).toMatchObject({ kettlebell: [{ name: 'A', rounds: 7 }], meditationSec: 600, runCount: 0 })
     expect(days[0]).toMatchObject({ runCount: 1, runKm: 0 })
+  })
+})
+
+describe('fasts', () => {
+  beforeEach(async () => {
+    for (const f of await fasts.list()) await fasts.remove(f.id)
+  })
+
+  it('runs one fast at a time and files it under the day it ended', async () => {
+    const started = await fasts.start(new Date(2026, 8, 20, 20, 0), 16)
+    expect(started).toMatchObject({ date: '2026-09-20', goalHours: 16 })
+    expect((await fasts.active())?.id).toBe(started.id)
+    await expect(fasts.start(new Date(), 12)).rejects.toThrow('already running')
+
+    const done = await fasts.finish(started.id, new Date(2026, 8, 21, 12, 30), ' felt good ')
+    expect(done).toMatchObject({ date: '2026-09-21', notes: 'felt good' })
+    expect(await fasts.active()).toBeUndefined()
+    expect((await fasts.listFinished()).map((f) => f.id)).toEqual([started.id])
+
+    const day = await getEntriesForDay('2026-09-21')
+    expect(day.fasts).toHaveLength(1)
+    expect(isDayEmpty(day)).toBe(false)
+    const summary = (await getDaySummaries()).find((d) => d.date === '2026-09-21')
+    expect(summary?.fastHours).toBeCloseTo(16.5)
+  })
+
+  it('keeps one fasting plan', async () => {
+    await fastingPlan.save({ goalHours: 16, startTime: '20:00', days: [1, 3, 5] })
+    const updated = await fastingPlan.save({ goalHours: 18, startTime: '19:30', days: [0, 1, 2, 3, 4, 5, 6] })
+    expect(await fastingPlan.get()).toEqual(updated)
+    expect(updated.id).toBe('plan')
   })
 })

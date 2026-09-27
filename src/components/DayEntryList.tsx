@@ -2,6 +2,7 @@ import { EntryCard, Note } from '@/components/EntryCard'
 import { Badge } from '@/components/ui/badge'
 import type { DayEntries } from '@/data'
 import { formatDuration, formatMovement, formatPace, formatTime, joinMeta, runTypeLabels } from '@/lib/format'
+import { formatFastDuration, hoursBetween } from '@/lib/fasting'
 import { moodLevels, type MoodRating } from '@/lib/mood'
 import { cn } from '@/lib/utils'
 
@@ -63,6 +64,22 @@ export function DayEntryList({ day }: { day: DayEntries }) {
           {session.notes && <Note>{session.notes}</Note>}
         </EntryCard>
       ))}
+
+      {day.fasts.map((fast) => {
+        const hours = hoursBetween(fast.startedAt, fast.endedAt!)
+        const clock = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+        return (
+          <EntryCard
+            key={fast.id}
+            kind="fast"
+            to={`/fast/${fast.id}`}
+            title={`${formatFastDuration(hours)} fast`}
+            meta={joinMeta(`${clock(fast.startedAt)} → ${clock(fast.endedAt!)}`, hours >= fast.goalHours ? `goal ${fast.goalHours} h ✓` : `goal ${fast.goalHours} h`)}
+          >
+            {fast.notes && <Note>{fast.notes}</Note>}
+          </EntryCard>
+        )
+      })}
 
       {day.meditations.map((meditation) => (
         <EntryCard

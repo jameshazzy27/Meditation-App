@@ -6,6 +6,8 @@ import { ComplexLibraryScreen } from '@/screens/ComplexLibraryScreen'
 import { ComplexesScreen } from '@/screens/ComplexesScreen'
 import { ComplexFormScreen } from '@/screens/ComplexFormScreen'
 import { DayScreen } from '@/screens/DayScreen'
+import { FastEditScreen } from '@/screens/FastEditScreen'
+import { FastScreen } from '@/screens/FastScreen'
 import { HistoryScreen } from '@/screens/HistoryScreen'
 import { KettlebellLogScreen } from '@/screens/KettlebellLogScreen'
 import { LogScreen } from '@/screens/LogScreen'
@@ -35,6 +37,8 @@ export default function App() {
         <Route path="log/run/:id" element={<RunLogScreen />} />
         <Route path="log/kettlebell/:id" element={<KettlebellLogScreen />} />
         <Route path="meditation/:id" element={<MeditationEditScreen />} />
+        <Route path="fast" element={<FastScreen />} />
+        <Route path="fast/:id" element={<FastEditScreen />} />
         <Route
           path="meditate"
           element={

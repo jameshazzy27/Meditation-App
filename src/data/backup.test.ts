@@ -5,6 +5,8 @@ import {
   complexes,
   deleteSampleData,
   exportBackup,
+  fastingPlan,
+  fasts,
   importBackup,
   initData,
   kettlebellSessions,
@@ -16,7 +18,7 @@ import {
 import { db } from '@/data/db'
 
 async function clearAll() {
-  await Promise.all([db.runs, db.complexes, db.kettlebellSessions, db.moods, db.meditations].map((t) => t.clear()))
+  await Promise.all([db.runs, db.complexes, db.kettlebellSessions, db.moods, db.meditations, db.fasts, db.fastingPlans].map((t) => t.clear()))
 }
 
 /** A realistic spread of data, including optional fields left out. */
@@ -27,6 +29,10 @@ async function fillWithData() {
   await runs.create({ date: '2026-09-21', runType: 'long', distanceKm: 12.1, durationSec: 3920, notes: 'River' })
   await runs.create({ date: '2026-09-22', runType: 'intervals' })
   await moods.create({ date: '2026-09-22', rating: 4, tags: ['sleep', 'coffee'], notes: 'Good day' })
+  const fast = await fasts.start(new Date('2026-09-20T19:30:00Z'), 16)
+  await fasts.finish(fast.id, new Date('2026-09-21T11:45:00Z'), 'Easy one')
+  await fasts.start(new Date('2026-09-22T20:00:00Z'), 18) // still running
+  await fastingPlan.save({ goalHours: 16, startTime: '20:00', days: [1, 2, 3, 4, 5] })
   await meditations.create({ date: '2026-09-22', durationSec: 600, hrSamples: [{ t: 0, bpm: 64 }, { t: 600, bpm: 57 }], avgBpm: 60, minBpm: 57, maxBpm: 64, deviceName: 'Polar H10' })
 }
 
@@ -42,7 +48,7 @@ describe('backup', () => {
   it('round-trips every table exactly: export → wipe → import', async () => {
     await fillWithData()
     const before = await exportBackup()
-    expect(before).toMatchObject({ app: 'aura', schemaVersion: 2 })
+    expect(before).toMatchObject({ app: 'aura', schemaVersion: 3 })
 
     // Simulate saving the file and clearing the browser's data.
     const file = JSON.parse(JSON.stringify(before))
@@ -60,6 +66,8 @@ describe('backup', () => {
       Object.fromEntries(Object.entries(b.data).map(([k, v]) => [k, [...v].sort((x, y) => x.id.localeCompare(y.id))]))
     expect(sort(withoutExportTime(after) as Backup)).toEqual(sort(withoutExportTime(before) as Backup))
     expect(after.data.runs).toHaveLength(2)
+    expect(after.data.fasts).toHaveLength(2)
+    expect(after.data.fastingPlans).toEqual(before.data.fastingPlans)
   })
 
   it('merge adds new records and keeps whichever copy was edited last', async () => {

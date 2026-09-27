@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Dumbbell, Flower2, Footprints } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Dumbbell, Flower2, Footprints, Hourglass } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -128,6 +128,9 @@ function DayRow({ day }: { day: DaySummary }) {
                 {kb.rounds !== undefined && ` · ${kb.rounds} rds`}
               </Stat>
             ))}
+            {day.fastHours > 0 && (
+              <Stat icon={<Hourglass className="size-4 text-fast" />}>{Math.round(day.fastHours * 10) / 10} h fast</Stat>
+            )}
             {day.meditationSec > 0 && (
               <Stat icon={<Flower2 className="size-4 text-meditation" />}>{Math.round(day.meditationSec / 60)} min</Stat>
             )}

@@ -44,6 +44,6 @@ describe('database upgrade', () => {
       data: { complexes: [{ id: 'c1', name: 'A', movements: ['Goblet squats × 12'], format: 'amrap', durationMin: 20, archived: false, ...stamp }] },
     })
     expect(result.ok && result.backup.data.complexes[0].movements).toEqual([{ name: 'Goblet squats', reps: 12 }])
-    expect(result.ok && result.backup.schemaVersion).toBe(2)
+    expect(result.ok && result.backup.schemaVersion).toBe(3)
   })
 })

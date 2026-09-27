@@ -1,11 +1,14 @@
 import type { Table } from 'dexie'
 
+import { toDateKey } from './dates'
 import { db } from './db'
 import { newId } from './ids'
 import type {
   Complex,
   DayEntries,
   DaySummary,
+  FastingPlan,
+  FastSession,
   KettlebellSession,
   MeditationSession,
   MoodEntry,
@@ -153,13 +156,64 @@ export function normaliseTag(tag: string): string {
   return tag.trim().replace(/\s+/g, ' ').toLowerCase()
 }
 
+const fastRepository = dayRepository<FastSession>(db.fasts)
+export const fasts = {
+  ...fastRepository,
+
+  /** The fast you're in right now, if any. */
+  async active(): Promise<FastSession | undefined> {
+    return (await db.fasts.toArray()).find((f) => !f.endedAt)
+  },
+
+  /** Finished fasts, most recent first. */
+  async listFinished(): Promise<FastSession[]> {
+    return (await db.fasts.toArray())
+      .filter((f) => f.endedAt)
+      .sort((a, b) => b.endedAt!.localeCompare(a.endedAt!))
+  },
+
+  /** Starts a fast (only one can be running). */
+  async start(startedAt: Date, goalHours: number): Promise<FastSession> {
+    if (await fasts.active()) throw new Error('A fast is already running.')
+    return fastRepository.create({ date: toDateKey(startedAt), startedAt: startedAt.toISOString(), goalHours })
+  },
+
+  /** Ends a fast; it then belongs to the day it ended. */
+  async finish(id: string, endedAt: Date, notes?: string): Promise<FastSession> {
+    const fast = await fastRepository.get(id)
+    if (!fast) throw new Error(`No fast with id ${id}`)
+    const { id: _id, createdAt: _c, updatedAt: _u, notes: _n, ...rest } = fast
+    return fastRepository.replace(id, {
+      ...rest,
+      date: toDateKey(endedAt),
+      endedAt: endedAt.toISOString(),
+      ...(notes?.trim() && { notes: notes.trim() }),
+    })
+  },
+}
+
+const PLAN_ID = 'plan'
+export const fastingPlan = {
+  get(): Promise<FastingPlan | undefined> {
+    return db.fastingPlans.get(PLAN_ID)
+  },
+  async save(plan: Omit<FastingPlan, 'id' | 'createdAt' | 'updatedAt'>): Promise<FastingPlan> {
+    const existing = await db.fastingPlans.get(PLAN_ID)
+    const now = new Date().toISOString()
+    const record: FastingPlan = { ...plan, id: PLAN_ID, createdAt: existing?.createdAt ?? now, updatedAt: now }
+    await db.fastingPlans.put(record)
+    return record
+  },
+}
+
 /** Everything logged on one day ('YYYY-MM-DD'). */
 export async function getEntriesForDay(date: string): Promise<DayEntries> {
-  const [dayMoods, dayRuns, daySessions, dayMeditations] = await Promise.all([
+  const [dayMoods, dayRuns, daySessions, dayMeditations, dayFasts] = await Promise.all([
     moods.listForDay(date),
     runs.listForDay(date),
     kettlebellSessions.listForDay(date),
     meditations.listForDay(date),
+    fasts.listForDay(date),
   ])
   return {
     date,
@@ -167,26 +221,30 @@ export async function getEntriesForDay(date: string): Promise<DayEntries> {
     runs: dayRuns,
     kettlebellSessions: daySessions,
     meditations: dayMeditations,
+    fasts: dayFasts.filter((f) => f.endedAt),
   }
 }
 
 export function isDayEmpty(day: DayEntries): boolean {
-  return !day.moods.length && !day.runs.length && !day.kettlebellSessions.length && !day.meditations.length
+  return (
+    !day.moods.length && !day.runs.length && !day.kettlebellSessions.length && !day.meditations.length && !day.fasts.length
+  )
 }
 
 /** One summary per day that has anything logged, newest day first. */
 export async function getDaySummaries(): Promise<DaySummary[]> {
-  const [allMoods, allRuns, allSessions, allMeditations] = await Promise.all([
+  const [allMoods, allRuns, allSessions, allMeditations, allFasts] = await Promise.all([
     db.moods.toArray(),
     db.runs.toArray(),
     db.kettlebellSessions.toArray(),
     db.meditations.toArray(),
+    db.fasts.toArray(),
   ])
   const days = new Map<string, DaySummary>()
   const day = (date: string) => {
     let summary = days.get(date)
     if (!summary) {
-      summary = { date, moodRatings: [], runCount: 0, runKm: 0, kettlebell: [], meditationSec: 0 }
+      summary = { date, moodRatings: [], runCount: 0, runKm: 0, kettlebell: [], meditationSec: 0, fastHours: 0 }
       days.set(date, summary)
     }
     return summary
@@ -200,11 +258,17 @@ export async function getDaySummaries(): Promise<DaySummary[]> {
   for (const session of allSessions.sort(byCreatedAt))
     day(session.date).kettlebell.push({ name: session.complexSnapshot.name, rounds: session.rounds })
   for (const meditation of allMeditations) day(meditation.date).meditationSec += meditation.durationSec
+  for (const fast of allFasts) {
+    if (!fast.endedAt) continue
+    day(fast.date).fastHours += (Date.parse(fast.endedAt) - Date.parse(fast.startedAt)) / 3600000
+  }
   return [...days.values()].sort((a, b) => b.date.localeCompare(a.date))
 }
 
 /** True once anything at all has been logged (or a complex added). */
 export async function hasAnyEntries(): Promise<boolean> {
-  const counts = await Promise.all([db.runs, db.complexes, db.kettlebellSessions, db.moods, db.meditations].map((t) => t.count()))
+  const counts = await Promise.all(
+    [db.runs, db.complexes, db.kettlebellSessions, db.moods, db.meditations, db.fasts].map((t) => t.count()),
+  )
   return counts.some((n) => n > 0)
 }

@@ -46,6 +46,7 @@
   --run: oklch(0.56 0.12 45); /* rust */
   --kettlebell: oklch(0.5 0.07 65); /* weathered oak */
   --meditation: oklch(0.48 0.06 170); /* pine */
+  --fast: oklch(0.47 0.09 290); /* dusk */
 
   /* Mood scale, 1 (low) → 5 (great) */
   --mood-1: oklch(0.52 0.15 22);
@@ -88,6 +89,7 @@
   --run: oklch(0.72 0.12 45);
   --kettlebell: oklch(0.74 0.08 70);
   --meditation: oklch(0.72 0.07 170);
+  --fast: oklch(0.74 0.08 290);
 
   --mood-1: oklch(0.66 0.14 22);
   --mood-2: oklch(0.74 0.12 55);
@@ -139,6 +141,7 @@
   --color-run: var(--run);
   --color-kettlebell: var(--kettlebell);
   --color-meditation: var(--meditation);
+  --color-fast: var(--fast);
   --color-mood-1: var(--mood-1);
   --color-mood-2: var(--mood-2);
   --color-mood-3: var(--mood-3);

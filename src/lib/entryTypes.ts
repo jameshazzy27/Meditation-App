@@ -1,6 +1,6 @@
-import { Dumbbell, Flower2, Footprints, Smile, type LucideIcon } from 'lucide-react'
+import { Dumbbell, Flower2, Footprints, Hourglass, Smile, type LucideIcon } from 'lucide-react'
 
-export type EntryKind = 'mood' | 'run' | 'kettlebell' | 'meditation'
+export type EntryKind = 'mood' | 'run' | 'kettlebell' | 'meditation' | 'fast'
 
 // Colour + icon for each kind of entry. Class names are written out in full so
 // Tailwind can find them; the colours themselves live in src/index.css.
@@ -26,4 +26,5 @@ export const entryKinds: Record<
     bar: 'bg-meditation',
     edge: 'border-l-meditation',
   },
+  fast: { label: 'Fast', icon: Hourglass, text: 'text-fast', tile: 'bg-fast/12 text-fast', bar: 'bg-fast', edge: 'border-l-fast' },
 }

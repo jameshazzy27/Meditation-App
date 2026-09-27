@@ -78,13 +78,33 @@ interface MeditationSession {   // Phase 3
   deviceName?: string;
   notes?: string;
 }
+
+interface FastSession {        // date = the day the fast ended (or began, while still running)
+  id: string; date: string; createdAt: string; updatedAt: string;
+  startedAt: string;           // ISO time
+  endedAt?: string;            // ISO time; missing while fasting (at most one such fast)
+  goalHours: number;
+  notes?: string;
+}
+
+interface FastingPlan {        // single record, id "plan" — used for calendar reminders
+  id: string; createdAt: string; updatedAt: string;
+  goalHours: number;
+  startTime: string;           // "HH:MM", e.g. "20:00"
+  days: number[];              // 0 = Sunday … 6 = Saturday
+}
 ```
 
 ## Schema versions
 - **1** — first version.
 - **2** — movements changed from text (`"Swing × 20"`) to `{ name, reps, eachArm }`. Old databases and v1 backup files are upgraded automatically (`src/data/db.ts`, `src/data/backup.ts`).
+- **3** — added `fasts` and `fastingPlans` tables. No data changes; older backups simply have no fasting data.
+
+## Fasting stages & notifications
+- Body-state stages live in `src/lib/fasting.ts` with their sources and an evidence level. Keep claims to what the research supports (e.g. autophagy timing in humans is not established) and keep the "not medical advice" note.
+- There is no server, so notifications only fire while Aura is open (`src/lib/fastAlerts.ts`). Alerts when it's closed come from calendar (.ics) reminders.
 
 ## Export format
 ```json
-{ "app": "aura", "schemaVersion": 2, "exportedAt": "...", "data": { "runs": [], "complexes": [], "kettlebellSessions": [], "moods": [], "meditations": [] } }
+{ "app": "aura", "schemaVersion": 3, "exportedAt": "...", "data": { "runs": [], "complexes": [], "kettlebellSessions": [], "moods": [], "meditations": [], "fasts": [], "fastingPlans": [] } }
 ```

@@ -3,7 +3,7 @@ import type { Table } from 'dexie'
 import { SCHEMA_VERSION, db } from './db'
 import { isDateKey } from './dates'
 import { movementFromText } from './movements'
-import type { Complex, KettlebellSession, MeditationSession, MoodEntry, Movement, Run } from './types'
+import type { Complex, FastingPlan, FastSession, KettlebellSession, MeditationSession, MoodEntry, Movement, Run } from './types'
 
 // Export / import of everything, in the format described in CLAUDE.md:
 // { app: 'aura', schemaVersion, exportedAt, data: { runs, complexes, kettlebellSessions, moods, meditations } }
@@ -14,6 +14,8 @@ export interface BackupData {
   kettlebellSessions: KettlebellSession[]
   moods: MoodEntry[]
   meditations: MeditationSession[]
+  fasts: FastSession[]
+  fastingPlans: FastingPlan[]
 }
 
 export interface Backup {
@@ -26,7 +28,7 @@ export interface Backup {
 export type BackupCounts = Record<keyof BackupData, number>
 export type ImportMode = 'merge' | 'replace'
 
-const tableNames = ['runs', 'complexes', 'kettlebellSessions', 'moods', 'meditations'] as const
+const tableNames = ['runs', 'complexes', 'kettlebellSessions', 'moods', 'meditations', 'fasts', 'fastingPlans'] as const
 
 function tables() {
   return {
@@ -35,12 +37,14 @@ function tables() {
     kettlebellSessions: db.kettlebellSessions,
     moods: db.moods,
     meditations: db.meditations,
+    fasts: db.fasts,
+    fastingPlans: db.fastingPlans,
   }
 }
 
 export async function exportBackup(): Promise<Backup> {
   const t = tables()
-  const [runs, complexes, kettlebellSessions, moods, meditations] = await Promise.all(
+  const [runs, complexes, kettlebellSessions, moods, meditations, allFasts, plans] = await Promise.all(
     tableNames.map((name) => t[name].toArray()),
   )
   return {
@@ -53,6 +57,8 @@ export async function exportBackup(): Promise<Backup> {
       kettlebellSessions: kettlebellSessions as KettlebellSession[],
       moods: moods as MoodEntry[],
       meditations: meditations as MeditationSession[],
+      fasts: allFasts as FastSession[],
+      fastingPlans: plans as FastingPlan[],
     },
   }
 }
@@ -181,6 +187,28 @@ const checkers: { [K in keyof BackupData]: (o: Obj, where: string) => BackupData
       notes: optStr(o, 'notes', where),
     })
   },
+  fasts: (o, where) => {
+    const goalHours = num(o, 'goalHours', where)
+    if (goalHours <= 0) fail(where, '"goalHours" should be more than 0')
+    const endedAt = optStr(o, 'endedAt', where)
+    if (endedAt !== undefined && Number.isNaN(Date.parse(endedAt))) fail(where, '"endedAt" isn\'t a valid date and time')
+    return tidy({
+      ...base(o, where),
+      date: day(o, where),
+      startedAt: timestamp(o, 'startedAt', where),
+      endedAt,
+      goalHours,
+      notes: optStr(o, 'notes', where),
+    })
+  },
+  fastingPlans: (o, where) => {
+    const startTime = str(o, 'startTime', where)
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) fail(where, '"startTime" should look like 20:00')
+    const days = o.days
+    if (!Array.isArray(days) || days.some((d) => !Number.isInteger(d) || d < 0 || d > 6))
+      fail(where, '"days" should be a list of 0 (Sunday) to 6 (Saturday)')
+    return { ...base(o, where), goalHours: num(o, 'goalHours', where), startTime, days: [...days] as number[] }
+  },
   meditations: (o, where) => {
     const samples = o.hrSamples
     if (!Array.isArray(samples)) fail(where, '"hrSamples" should be a list')
@@ -207,6 +235,8 @@ const labels: Record<keyof BackupData, string> = {
   kettlebellSessions: 'Kettlebell session',
   moods: 'Mood',
   meditations: 'Meditation',
+  fasts: 'Fast',
+  fastingPlans: 'Fasting plan',
 }
 
 /**
@@ -222,6 +252,7 @@ export function checkBackup(file: unknown): { ok: true; backup: Backup } | { ok:
     if (version > SCHEMA_VERSION)
       throw new BackupError('This backup was made by a newer version of Aura. Update the app, then try again.')
     // Older versions are upgraded as each record is checked (v1 → v2: text movements → { name, reps, eachArm }).
+    // v2 → v3 only added tables (fasts, fastingPlans), which older files simply don't have.
     if (!isObj(file.data)) throw new BackupError('The backup file is damaged (no data).')
 
     const data = {} as BackupData

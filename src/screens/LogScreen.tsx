@@ -12,6 +12,7 @@ const options: { kind: EntryKind; title: string; description: string; to?: strin
   { kind: 'kettlebell', title: 'Kettlebell session', description: 'Complex, weight and rounds', to: '/log/kettlebell' },
   { kind: 'run', title: 'Run', description: 'Distance, time and pace', to: '/log/run' },
   { kind: 'meditation', title: 'Meditate', description: 'Timer, with heart rate if you like', to: '/meditate' },
+  { kind: 'fast', title: 'Fast', description: 'Timer, body stages and reminders', to: '/fast' },
 ]
 
 export function LogScreen() {

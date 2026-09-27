@@ -67,6 +67,26 @@ export interface MeditationSession extends DayEntry {
   notes?: string
 }
 
+/**
+ * A fast. `date` is the day it ended (or, while still fasting, the day it began).
+ * `endedAt` is missing while the fast is still going — there's at most one of those.
+ */
+export interface FastSession extends DayEntry {
+  startedAt: string // ISO time
+  endedAt?: string // ISO time
+  goalHours: number
+  notes?: string
+}
+
+/** Your usual fasting routine, used for reminders. There is one plan, id "plan". */
+export interface FastingPlan extends Timestamps {
+  goalHours: number
+  /** Usual start time, 24-hour "HH:MM", e.g. "20:00". */
+  startTime: string
+  /** Days you usually fast, 0 = Sunday … 6 = Saturday. */
+  days: number[]
+}
+
 /** What you pass in when creating a record — id and timestamps are filled in for you. */
 export type NewRecord<T extends Timestamps> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 /** What you can change on an existing record. */
@@ -79,6 +99,7 @@ export interface DayEntries {
   runs: Run[]
   kettlebellSessions: KettlebellSession[]
   meditations: MeditationSession[]
+  fasts: FastSession[]
 }
 
 /** A compact overview of one day, for the History list and calendar. */
@@ -90,4 +111,6 @@ export interface DaySummary {
   runKm: number
   kettlebell: { name: string; rounds?: number }[]
   meditationSec: number
+  /** Hours fasted, for fasts that ended on this day. */
+  fastHours: number
 }

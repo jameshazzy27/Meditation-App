@@ -19,6 +19,8 @@ const countLabels: [keyof BackupCounts, string, string][] = [
   ['kettlebellSessions', 'kettlebell session', 'kettlebell sessions'],
   ['complexes', 'complex', 'complexes'],
   ['meditations', 'meditation', 'meditations'],
+  ['fasts', 'fast', 'fasts'],
+  ['fastingPlans', 'fasting plan', 'fasting plans'],
 ]
 
 function describeCounts(counts: BackupCounts): string {

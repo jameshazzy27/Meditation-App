@@ -1,13 +1,13 @@
 import Dexie, { type Table } from 'dexie'
 
 import { movementFromText } from './movements'
-import type { Complex, KettlebellSession, MeditationSession, MoodEntry, Run } from './types'
+import type { Complex, FastingPlan, FastSession, KettlebellSession, MeditationSession, MoodEntry, Run } from './types'
 
 /**
  * Version of the data model. Goes into export files, and must be bumped
  * (with a Dexie migration below) whenever the shape of the data changes.
  */
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 // The database lives in the browser (IndexedDB). Only files in src/data/ may
 // import this — the rest of the app goes through the functions in index.ts.
@@ -17,6 +17,8 @@ export const db = new Dexie('aura') as Dexie & {
   kettlebellSessions: Table<KettlebellSession, string>
   moods: Table<MoodEntry, string>
   meditations: Table<MeditationSession, string>
+  fasts: Table<FastSession, string>
+  fastingPlans: Table<FastingPlan, string>
 }
 
 // Listed fields are indexed for fast lookups; every other field is still saved.
@@ -50,3 +52,6 @@ db.version(2)
         s.complexSnapshot.movements = upgrade(s.complexSnapshot.movements)
       })
   })
+
+// v3: fasting — fasts, and your fasting plan (for reminders). New tables only.
+db.version(3).stores({ ...tables, fasts: 'id, date, startedAt', fastingPlans: 'id' })
