@@ -1,4 +1,5 @@
-import { addDays, fromDateKey, type KettlebellSession, type MoodEntry, type Run, type RunType } from '@/data'
+import { addDays, fromDateKey, type KettlebellSession, type MeditationSession, type MoodEntry, type Run, type RunType } from '@/data'
+import { summariseHeartRate } from '@/lib/meditation'
 
 // Pure calculations behind the Trends screen. They take plain lists of entries
 // (already loaded through the data layer) so they're easy to test.
@@ -166,6 +167,7 @@ export function streaks(loggedDates: Iterable<string>, today: string): { current
 }
 
 export interface WeekSummary {
+  meditationMin: number
   km: number
   runs: number
   kettlebell: number
@@ -175,7 +177,7 @@ export interface WeekSummary {
 
 export function summariseWeek(
   week: string,
-  data: { runs: Run[]; sessions: KettlebellSession[]; moods: MoodEntry[]; meditations: { date: string }[] },
+  data: { runs: Run[]; sessions: KettlebellSession[]; moods: MoodEntry[]; meditations: { date: string; durationSec?: number }[] },
 ): WeekSummary {
   const end = addDays(week, 6)
   const inWeek = <T extends { date: string }>(list: T[]) => list.filter((e) => e.date >= week && e.date <= end)
@@ -184,6 +186,7 @@ export function summariseWeek(
   const logged = new Set([...runs, ...inWeek(data.sessions), ...moods, ...inWeek(data.meditations)].map((e) => e.date))
   const mood = average(moods.map((m) => m.rating))
   return {
+    meditationMin: Math.round(inWeek(data.meditations).reduce((s, m) => s + (m.durationSec ?? 0), 0) / 60),
     km: Math.round(runs.reduce((s, r) => s + (r.distanceKm ?? 0), 0) * 10) / 10,
     runs: runs.length,
     kettlebell: inWeek(data.sessions).length,
@@ -195,4 +198,27 @@ export function summariseWeek(
 /** "12 Sep" — short dates for chart axes. */
 export function shortDate(date: string): string {
   return fromDateKey(date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
+
+// ---- Meditation -----------------------------------------------------------
+
+export function weeklyMeditation(sessions: MeditationSession[], weeks: string[]): { week: string; minutes: number; sessions: number }[] {
+  const rows = new Map(weeks.map((week) => [week, { week, minutes: 0, sessions: 0 }]))
+  for (const s of sessions) {
+    const row = rows.get(weekStart(s.date))
+    if (!row) continue
+    row.sessions += 1
+    row.minutes += s.durationSec / 60
+  }
+  return [...rows.values()].map((r) => ({ ...r, minutes: Math.round(r.minutes) }))
+}
+
+/** For each session with heart rate: how much it fell from the first to the last minute. */
+export function heartRateDrops(sessions: MeditationSession[], start: string): { date: string; drop: number; avgBpm: number }[] {
+  return since(sessions, start)
+    .sort(byDate)
+    .flatMap((s) => {
+      const hr = summariseHeartRate(s.hrSamples)
+      return hr && s.hrSamples.length > 1 ? [{ date: s.date, drop: hr.drop, avgBpm: hr.avgBpm }] : []
+    })
 }

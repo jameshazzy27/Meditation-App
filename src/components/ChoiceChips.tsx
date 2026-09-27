@@ -29,7 +29,9 @@ export function ChoiceChips<T extends string>({
           aria-checked={value === option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            'h-11 rounded-xl px-2 text-sm font-medium transition-colors',
+            'h-11 rounded-xl font-medium transition-colors',
+            // Five or more across a phone screen need a touch less room each.
+            options.length >= 5 ? 'px-1 text-[13px]' : 'px-2 text-sm',
             value === option.value ? selectedClass : 'bg-muted text-muted-foreground hover:text-foreground',
           )}
         >

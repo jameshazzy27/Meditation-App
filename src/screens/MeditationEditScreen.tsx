@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
 import { BackLink } from '@/components/BackLink'
@@ -6,11 +6,17 @@ import { DeleteEntryButton } from '@/components/DeleteEntryButton'
 import { Field } from '@/components/Field'
 import { ScreenHeader } from '@/components/ScreenHeader'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { meditations, useLiveData, type MeditationSession } from '@/data'
 import { formatDuration } from '@/lib/format'
+import { summariseHeartRate } from '@/lib/meditation'
 import { dayPath } from '@/lib/routes'
+
+// The chart library loads only when a session with heart rate is opened.
+const HeartRateChart = lazy(() =>
+  import('@/components/charts/HeartRateChart').then((m) => ({ default: m.HeartRateChart })),
+)
 
 /** Meditation sessions come from the timer (Phase 3); here you can add notes or delete one. */
 export function MeditationEditScreen() {
@@ -33,6 +39,7 @@ function MeditationForm({ session }: { session: MeditationSession }) {
   const navigate = useNavigate()
   const [notes, setNotes] = useState(session.notes ?? '')
   const back = dayPath(session.date)
+  const hr = session.hrSamples.length > 1 ? summariseHeartRate(session.hrSamples) : undefined
 
   async function save(event: FormEvent) {
     event.preventDefault()
@@ -66,6 +73,23 @@ function MeditationForm({ session }: { session: MeditationSession }) {
             ))}
           </CardContent>
         </Card>
+        {hr && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {hr.drop > 0 ? `Heart rate fell ${hr.drop} bpm` : hr.drop < 0 ? `Heart rate rose ${-hr.drop} bpm` : 'Heart rate held steady'}
+              </CardTitle>
+              <CardDescription>
+                From {hr.startBpm} to {hr.endBpm} bpm{session.deviceName ? ` · ${session.deviceName}` : ''}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Suspense fallback={<div className="h-44" />}>
+                <HeartRateChart samples={session.hrSamples} />
+              </Suspense>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent>
             <Field label="Notes" hint="Optional" htmlFor="notes">

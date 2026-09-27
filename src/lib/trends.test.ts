@@ -14,6 +14,8 @@ import {
   topTags,
   withWeeklyAverage,
   weekStart,
+  heartRateDrops,
+  weeklyMeditation,
   weeklyRuns,
   weeksBetween,
 } from './trends'
@@ -128,8 +130,33 @@ describe('overview', () => {
       runs: [run('2026-09-22', 'short', 5.25), run('2026-09-28', 'long', 10)],
       sessions: [kb('2026-09-23', 'a')],
       moods: [mood('2026-09-22', 3), mood('2026-09-26', 4)],
-      meditations: [{ date: '2026-09-27' }],
+      meditations: [{ date: '2026-09-27', durationSec: 630 }],
     })
-    expect(summary).toEqual({ km: 5.3, runs: 1, kettlebell: 1, mood: 3.5, daysLogged: 4 })
+    expect(summary).toEqual({ meditationMin: 11, km: 5.3, runs: 1, kettlebell: 1, mood: 3.5, daysLogged: 4 })
+  })
+})
+
+describe('meditation', () => {
+  const med = (date: string, durationSec: number, bpms: number[] = []) => ({
+    ...stamp(),
+    date,
+    durationSec,
+    hrSamples: bpms.map((bpm, i) => ({ t: i * 60, bpm })),
+  })
+  const sessions = [med('2026-09-22', 600, [70, 66, 62]), med('2026-09-24', 900), med('2026-09-08', 300, [64, 63])]
+
+  it('adds up minutes per week', () => {
+    expect(weeklyMeditation(sessions, ['2026-09-07', '2026-09-14', '2026-09-21'])).toEqual([
+      { week: '2026-09-07', minutes: 5, sessions: 1 },
+      { week: '2026-09-14', minutes: 0, sessions: 0 },
+      { week: '2026-09-21', minutes: 25, sessions: 2 },
+    ])
+  })
+
+  it('lists the heart-rate drop for sessions that recorded heart rate', () => {
+    expect(heartRateDrops(sessions, '2026-09-01')).toEqual([
+      { date: '2026-09-08', drop: 1, avgBpm: 64 },
+      { date: '2026-09-22', drop: 8, avgBpm: 66 },
+    ])
   })
 })

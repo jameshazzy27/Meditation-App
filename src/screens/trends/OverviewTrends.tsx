@@ -79,6 +79,13 @@ export function OverviewTrends({ data, today }: { data: TrendsData; today: strin
             className="p-3"
           />
           <StatTile
+            label="Meditation"
+            value={now.meditationMin}
+            unit="min"
+            detail={<Change now={now.meditationMin} before={last.meditationMin} unit=" min" />}
+            className="p-3"
+          />
+          <StatTile
             label="Days logged"
             value={now.daysLogged}
             unit="of 7"

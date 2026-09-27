@@ -18,6 +18,7 @@ import { StylePreviewScreen } from '@/screens/StylePreviewScreen'
 // Charts are only loaded when Trends is opened, so the rest of the app starts faster.
 // (They're still saved for offline use.)
 const TrendsScreen = lazy(() => import('@/screens/trends/TrendsScreen').then((m) => ({ default: m.TrendsScreen })))
+const MeditateScreen = lazy(() => import('@/screens/MeditateScreen').then((m) => ({ default: m.MeditateScreen })))
 
 export default function App() {
   return (
@@ -34,6 +35,14 @@ export default function App() {
         <Route path="log/run/:id" element={<RunLogScreen />} />
         <Route path="log/kettlebell/:id" element={<KettlebellLogScreen />} />
         <Route path="meditation/:id" element={<MeditationEditScreen />} />
+        <Route
+          path="meditate"
+          element={
+            <Suspense fallback={null}>
+              <MeditateScreen />
+            </Suspense>
+          }
+        />
         <Route
           path="trends"
           element={

@@ -11,6 +11,7 @@ const options: { kind: EntryKind; title: string; description: string; to?: strin
   { kind: 'mood', title: 'Mood', description: 'A quick check-in', to: '/log/mood' },
   { kind: 'kettlebell', title: 'Kettlebell session', description: 'Complex, weight and rounds', to: '/log/kettlebell' },
   { kind: 'run', title: 'Run', description: 'Distance, time and pace', to: '/log/run' },
+  { kind: 'meditation', title: 'Meditate', description: 'Timer, with heart rate if you like', to: '/meditate' },
 ]
 
 export function LogScreen() {

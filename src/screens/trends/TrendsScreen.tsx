@@ -6,17 +6,19 @@ import { todayKey } from '@/data'
 import { rangeStart, type TimeRange } from '@/lib/trends'
 
 import { KettlebellTrends } from './KettlebellTrends'
+import { MeditationTrends } from './MeditationTrends'
 import { MoodTrends } from './MoodTrends'
 import { OverviewTrends } from './OverviewTrends'
 import { RunningTrends } from './RunningTrends'
 import { useTrendsData } from './useTrendsData'
 
-type Section = 'overview' | 'kettlebell' | 'running' | 'mood'
+type Section = 'overview' | 'kettlebell' | 'running' | 'mood' | 'meditation'
 const sections: { value: Section; label: string }[] = [
-  { value: 'overview', label: 'Overview' },
+  { value: 'overview', label: 'Week' },
   { value: 'kettlebell', label: 'Bell' },
   { value: 'running', label: 'Runs' },
   { value: 'mood', label: 'Mood' },
+  { value: 'meditation', label: 'Calm' },
 ]
 const ranges: { value: TimeRange; label: string }[] = [
   { value: '4w', label: '4 weeks' },
@@ -61,6 +63,7 @@ export function TrendsScreen() {
       {data && section === 'kettlebell' && <KettlebellTrends data={data} start={start} />}
       {data && section === 'running' && <RunningTrends data={data} start={start} today={today} />}
       {data && section === 'mood' && <MoodTrends data={data} start={start} />}
+      {data && section === 'meditation' && <MeditationTrends data={data} start={start} today={today} />}
     </>
   )
 }

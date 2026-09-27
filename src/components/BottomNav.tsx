@@ -1,6 +1,7 @@
 import { CalendarDays, ChartLine, History, PlusCircle, Settings, type LucideIcon } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 
+import { useIsFocusMode } from '@/lib/focusMode'
 import { cn } from '@/lib/utils'
 
 const tabs: { to: string; label: string; icon: LucideIcon }[] = [
@@ -19,6 +20,7 @@ function isTabActive(tab: string, pathname: string): boolean {
 
 export function BottomNav() {
   const { pathname } = useLocation()
+  if (useIsFocusMode()) return null
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/85 backdrop-blur-md">
