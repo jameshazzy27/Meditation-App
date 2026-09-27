@@ -1,4 +1,4 @@
-import { Bell, BellOff, CalendarPlus, Check, ChevronDown, ChevronRight, Hourglass, Play, Square, X } from 'lucide-react'
+import { AlarmClock, Bell, BellOff, CalendarPlus, Check, ChevronDown, ChevronRight, Hourglass, Play, Square, Timer, X } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 
@@ -28,6 +28,7 @@ import {
   timeAt,
   type FastingStage,
 } from '@/lib/fasting'
+import { isIPhone, openAppLink, planAlarms, SHORTCUT_NAME, shortcutTimerUrl } from '@/lib/iphoneReminders'
 import { askToNotify, notifyAvailability, type NotifyAvailability } from '@/lib/notify'
 import { parseWholeNumber } from '@/lib/numbers'
 import { dayPath } from '@/lib/routes'
@@ -193,6 +194,7 @@ function ActiveFast({ fast }: { fast: FastSession }) {
   const goalAt = timeAt(fast.startedAt, fast.goalHours)
   const reached = hours >= fast.goalHours
   const progress = Math.min(1, hours / fast.goalHours)
+  const iPhone = isIPhone()
 
   if (ending) return <EndFast fast={fast} onBack={() => setEnding(false)} onSaved={(date) => navigate(dayPath(date), { state: { saved: 'Fast' } })} />
 
@@ -227,15 +229,20 @@ function ActiveFast({ fast }: { fast: FastSession }) {
         <Button
           size="lg"
           variant="outline"
+          disabled={reached}
           onClick={() =>
-            void saveCalendarFile(`aura-fast-goal.ics`, goalReminderIcs(fast))
+            iPhone
+              ? openAppLink(shortcutTimerUrl((fast.goalHours - hours) * 60))
+              : void saveCalendarFile(`aura-fast-goal.ics`, goalReminderIcs(fast))
           }
         >
-          <CalendarPlus /> Remind me
+          {iPhone ? <Timer /> : <CalendarPlus />} Remind me
         </Button>
       </div>
       <p className="px-1 text-xs text-muted-foreground">
-        “Remind me” adds your goal time to your phone’s Calendar, which alerts you even when Aura is closed.
+        {iPhone
+          ? `“Remind me” starts an iPhone Clock timer for the ${formatFastDuration(Math.max(0, fast.goalHours - hours))} left, which rings even when Aura is closed. It needs the one-time “${SHORTCUT_NAME}” shortcut — see Plan & reminders below.`
+          : '“Remind me” adds your goal time to your calendar, which alerts you even when Aura is closed.'}
       </p>
       <Button
         variant="ghost"
@@ -427,6 +434,7 @@ function PlanCard({ plan }: { plan?: FastingPlan }) {
   const [days, setDays] = useState<number[]>(plan?.days ?? [0, 1, 2, 3, 4, 5, 6])
   const [saved, setSaved] = useState(false)
   const [alerts, setAlerts] = useState<NotifyAvailability>(notifyAvailability)
+  const iPhone = isIPhone()
   const goal = parseWholeNumber(goalText)
   const valid = !!goal && goal >= 1 && goal <= 240 && /^\d{2}:\d{2}$/.test(startTime) && days.length > 0
 
@@ -488,18 +496,23 @@ function PlanCard({ plan }: { plan?: FastingPlan }) {
             <Button onClick={() => void save()} disabled={!valid}>
               {saved ? <Check /> : null} {saved ? 'Saved' : 'Save plan'}
             </Button>
-            <Button
-              variant="outline"
-              disabled={!valid}
-              onClick={() => void saveCalendarFile('aura-fasting-plan.ics', planRemindersIcs({ startTime, goalHours: goal!, days }))}
-            >
-              <CalendarPlus /> Add to Calendar
-            </Button>
+            {!iPhone && (
+              <Button
+                variant="outline"
+                disabled={!valid}
+                onClick={() => void saveCalendarFile('aura-fasting-plan.ics', planRemindersIcs({ startTime, goalHours: goal!, days }))}
+              >
+                <CalendarPlus /> Add to Calendar
+              </Button>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground">
-            Add to Calendar creates two repeating reminders — “Start your fast” and “Fasting goal” — that alert you
-            even when Aura is closed. On iPhone, open the file and tap <strong>Add All</strong>.
-          </p>
+          {!iPhone && (
+            <p className="text-xs text-muted-foreground">
+              Add to Calendar creates two repeating reminders — “Start your fast” and “Fasting goal” — that alert you
+              even when Aura is closed.
+            </p>
+          )}
+          {iPhone && valid && <IPhoneReminders startTime={startTime} goalHours={goal!} days={days} />}
 
           <div className="space-y-2 border-t pt-4 text-sm">
             <p className="flex items-center gap-2 font-semibold">
@@ -512,7 +525,7 @@ function PlanCard({ plan }: { plan?: FastingPlan }) {
                 : alerts === 'denied'
                   ? 'Notifications are blocked for this browser. You’ll still see banners inside Aura.'
                   : alerts === 'unsupported'
-                    ? 'This browser can’t show notifications, so Aura shows a banner inside the app instead. Use Add to Calendar for alerts when Aura is closed.'
+                    ? `This browser can’t show notifications, so Aura shows a banner inside the app instead. For alerts when Aura is closed, use ${iPhone ? 'the Clock alarms and Remind me' : 'Add to Calendar'}.`
                     : 'Aura always shows a banner at each stage. Turn on notifications to get them as system alerts too.'}
             </p>
             {alerts === 'default' && (
@@ -524,6 +537,69 @@ function PlanCard({ plan }: { plan?: FastingPlan }) {
         </CardContent>
       )}
     </Card>
+  )
+}
+
+/** iPhone: the Clock alarms for your plan, and the one-time Shortcut behind "Remind me". */
+function IPhoneReminders(plan: { startTime: string; goalHours: number; days: number[] }) {
+  const [showSteps, setShowSteps] = useState(false)
+  return (
+    <div className="space-y-4 border-t pt-4 text-sm">
+      <div className="space-y-2">
+        <p className="flex items-center gap-2 font-semibold">
+          <AlarmClock className="size-4 text-fast" /> Clock alarms for your plan
+        </p>
+        <p className="text-muted-foreground">
+          The surest reminder on iPhone. Set these once in the <strong>Clock</strong> app → <strong>Alarms</strong> →{' '}
+          <strong>+</strong>, using <strong>Repeat</strong> and <strong>Label</strong>:
+        </p>
+        <ul className="divide-y rounded-md border bg-muted/40">
+          {planAlarms(plan).map((alarm) => (
+            <li key={alarm.label} className="flex items-baseline gap-3 px-3 py-2">
+              <span className="text-lg font-semibold tabular-nums">{alarm.time}</span>
+              <span className="flex-1">{alarm.label}</span>
+              <span className="text-xs text-muted-foreground">{alarm.days}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground">If you change your plan, update the alarms to match.</p>
+      </div>
+
+      <div className="space-y-2">
+        <p className="flex items-center gap-2 font-semibold">
+          <Timer className="size-4 text-fast" /> “Remind me” timer — one-time setup
+        </p>
+        <p className="text-muted-foreground">
+          Lets “Remind me” start a Clock timer for the time left in a fast. Takes about a minute.
+        </p>
+        <button type="button" className="font-semibold text-primary" onClick={() => setShowSteps((v) => !v)} aria-expanded={showSteps}>
+          {showSteps ? 'Hide steps' : 'Show me how'}
+        </button>
+        {showSteps && (
+          <ol className="list-decimal space-y-1.5 pl-5">
+            <li>
+              Open the <strong>Shortcuts</strong> app and tap <strong>+</strong>.
+            </li>
+            <li>
+              Tap the name at the top and call it exactly <strong>{SHORTCUT_NAME}</strong>.
+            </li>
+            <li>
+              Tap <strong>Add Action</strong>, search for <strong>Start Timer</strong> and add it.
+            </li>
+            <li>
+              Tap the <strong>30</strong> in “Start timer for 30 minutes”, choose <strong>Select Variable</strong>,
+              then <strong>Shortcut Input</strong>. Keep it as minutes.
+            </li>
+            <li>
+              Tap <strong>Done</strong>. Then test it below — iPhone will ask once to let Aura open Shortcuts.
+            </li>
+          </ol>
+        )}
+        <Button size="sm" variant="outline" onClick={() => openAppLink(shortcutTimerUrl(1))}>
+          <Timer /> Test: 1-minute timer
+        </Button>
+      </div>
+    </div>
   )
 }
 

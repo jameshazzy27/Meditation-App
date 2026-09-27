@@ -102,7 +102,7 @@ interface FastingPlan {        // single record, id "plan" — used for calendar
 
 ## Fasting stages & notifications
 - Body-state stages live in `src/lib/fasting.ts` with their sources and an evidence level. Keep claims to what the research supports (e.g. autophagy timing in humans is not established) and keep the "not medical advice" note.
-- There is no server, so notifications only fire while Aura is open (`src/lib/fastAlerts.ts`). Alerts when it's closed come from calendar (.ics) reminders.
+- There is no server, so notifications only fire while Aura is open (`src/lib/fastAlerts.ts`). For alerts when it's closed: on iPhone, a one-time "Aura Fast Timer" Shortcut (started via `shortcuts://`) and Clock alarms for the plan (`src/lib/iphoneReminders.ts`) — calendar files from Bluefy/Files don't reach Calendar on iPhone. On other devices, calendar (.ics) files.
 
 ## Export format
 ```json
