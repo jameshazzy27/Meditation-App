@@ -83,6 +83,12 @@ export function DayScreen() {
         }
         action={
           <div className="flex gap-1">
+            {/* Jump straight back to today when looking at another day. */}
+            {!isToday && (
+              <Button variant="secondary" className="px-3" onClick={() => navigate('/')}>
+                Today
+              </Button>
+            )}
             <Button variant="secondary" size="icon" aria-label="Previous day" onClick={() => go(-1)}>
               <ChevronLeft />
             </Button>
@@ -103,7 +109,7 @@ export function DayScreen() {
           <Card className="border-dashed bg-transparent shadow-none">
             <CardHeader className="text-center">
               <CardTitle>Nothing logged {isToday ? 'yet' : 'this day'}</CardTitle>
-              <CardDescription>Moods, runs and kettlebell sessions show up here.</CardDescription>
+              <CardDescription>Everything you log for this day shows up here.</CardDescription>
             </CardHeader>
           </Card>
         )}
@@ -113,11 +119,6 @@ export function DayScreen() {
             <Plus /> Add to {isToday ? 'today' : 'this day'}
           </Link>
         </Button>
-        {!isToday && (
-          <Button asChild variant="ghost" className="w-full text-muted-foreground">
-            <Link to="/">Back to today</Link>
-          </Button>
-        )}
       </div>
     </div>
   )

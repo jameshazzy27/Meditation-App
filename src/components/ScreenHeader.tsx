@@ -21,7 +21,7 @@ export function ScreenHeader({
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           {subtitle && <p className="mb-1 text-sm font-medium text-muted-foreground">{subtitle}</p>}
-          <h1 className="text-[2rem] leading-tight font-bold">{title}</h1>
+          <h1 className="text-[clamp(1.6rem,7.4vw,2rem)] leading-tight font-bold">{title}</h1>
         </div>
         {action}
       </div>
